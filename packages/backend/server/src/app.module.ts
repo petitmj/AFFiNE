@@ -32,6 +32,7 @@ import {
   BackendRuntimeWorkerModule,
 } from './core/backend-runtime';
 import { CommentModule } from './core/comment';
+import { NotionImportModule } from './core/notion-import';
 import { ServerConfigModule, ServerConfigResolverModule } from './core/config';
 import { DocStorageModule } from './core/doc';
 import { DocJobsModule } from './core/doc-jobs';
@@ -217,7 +218,8 @@ export function buildAppModule(env: Env) {
       OAuthModule,
       CalendarModule,
       TelemetryModule,
-      CommentModule
+      CommentModule,
+      NotionImportModule
     )
     // worker for and self-hosted API only for self-host and local development only
     .useIf(

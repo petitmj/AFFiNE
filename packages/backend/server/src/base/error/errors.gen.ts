@@ -1101,6 +1101,24 @@ export class NotificationNotFound extends UserFriendlyError {
     super('resource_not_found', 'notification_not_found', message);
   }
 }
+
+export class NotionImportNotFound extends UserFriendlyError {
+  constructor(message?: string) {
+    super('resource_not_found', 'notion_import_not_found', message);
+  }
+}
+
+export class NotionImportTokenInvalid extends UserFriendlyError {
+  constructor(message?: string) {
+    super('invalid_input', 'notion_import_token_invalid', message);
+  }
+}
+
+export class NotionImportInProgress extends UserFriendlyError {
+  constructor(message?: string) {
+    super('action_forbidden', 'notion_import_in_progress', message);
+  }
+}
 @ObjectType()
 class MentionUserDocAccessDeniedDataType {
   @Field() docId!: string
@@ -1366,6 +1384,9 @@ export enum ErrorNames {
   UNSUPPORTED_CLIENT_VERSION,
   UNSUPPORTED_SERVER_VERSION,
   NOTIFICATION_NOT_FOUND,
+  NOTION_IMPORT_NOT_FOUND,
+  NOTION_IMPORT_TOKEN_INVALID,
+  NOTION_IMPORT_IN_PROGRESS,
   MENTION_USER_DOC_ACCESS_DENIED,
   MENTION_USER_ONESELF_DENIED,
   INVALID_APP_CONFIG,

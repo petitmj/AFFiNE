@@ -29,6 +29,7 @@ import { HistoryModel } from './history';
 import { MailDeliveryModel } from './mail-delivery';
 import { McpCredentialModel } from './mcp-credential';
 import { NotificationModel } from './notification';
+import { NotionImportModel } from './notion-import';
 import {
   DocAccessPolicyModel,
   DocGrantModel,
@@ -58,6 +59,7 @@ const MODELS = {
   docUser: DocUserModel,
   history: HistoryModel,
   notification: NotificationModel,
+  notionImport: NotionImportModel,
   workspaceMember: WorkspaceMemberModel,
   workspaceInvitation: WorkspaceInvitationModel,
   workspaceAccessPolicy: WorkspaceAccessPolicyModel,
@@ -134,6 +136,7 @@ const ModelsSymbolProvider: ExistingProvider = {
 export class ModelsModule {}
 
 export * from './blob';
+export * from './notion-import';
 export * from './calendar-account';
 export * from './calendar-event';
 export * from './calendar-event-instance';

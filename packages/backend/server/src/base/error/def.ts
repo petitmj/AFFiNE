@@ -957,6 +957,20 @@ export const USER_FRIENDLY_ERRORS = {
     type: 'resource_not_found',
     message: 'Notification not found.',
   },
+
+  // Notion import Errors
+  notion_import_not_found: {
+    type: 'resource_not_found',
+    message: 'Notion import not found.',
+  },
+  notion_import_token_invalid: {
+    type: 'invalid_input',
+    message: 'The Notion integration token was rejected by Notion.',
+  },
+  notion_import_in_progress: {
+    type: 'action_forbidden',
+    message: 'A Notion import is already running for this workspace.',
+  },
   mention_user_doc_access_denied: {
     type: 'no_permission',
     args: { docId: 'string' },
