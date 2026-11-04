@@ -21,6 +21,8 @@ import { configureWorkspaceDBModule } from './db';
 import { configureDialogModule } from './dialogs';
 import { configureDndModule } from './dnd';
 import { configureDocModule } from './doc';
+import { configureNotionImportModule } from './notion-import';
+import { configureShelfModule } from './shelf';
 import { configureDocDisplayMetaModule } from './doc-display-meta';
 import { configureDocInfoModule } from './doc-info';
 import { configureDocLinksModule } from './doc-link';
@@ -105,6 +107,8 @@ export function configureCommonModules(framework: Framework) {
   configureEditorSettingModule(framework);
   configureImportTemplateModule(framework);
   configureImportModule(framework);
+  configureNotionImportModule(framework);
+  configureShelfModule(framework);
   configureUserspaceModule(framework);
   configureAppSidebarModule(framework);
   configureJournalModule(framework);

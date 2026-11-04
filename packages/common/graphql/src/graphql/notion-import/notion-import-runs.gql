@@ -1,0 +1,30 @@
+query notionImportRuns($pagination: PaginationInput) {
+  notionImportRuns(pagination: $pagination) {
+    edges {
+      node {
+        id
+        workspaceId
+        createdBy
+        status
+        mode
+        scope
+        progress
+        includeBlockComments
+        lastError
+        leaseOwner
+        leaseExpiresAt
+        expiresAt
+        createdAt
+        updatedAt
+        canRetry
+        canCancel
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    totalCount
+  }
+}

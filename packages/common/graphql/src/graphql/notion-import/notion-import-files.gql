@@ -1,0 +1,23 @@
+query notionImportFiles($runId: String!, $pagination: NotionImportPaginationInput) {
+  notionImportFiles(runId: $runId, pagination: $pagination) {
+    edges {
+      node {
+        id
+        runId
+        ownerId
+        slot
+        blobKey
+        status
+        error
+        createdAt
+        updatedAt
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    totalCount
+  }
+}

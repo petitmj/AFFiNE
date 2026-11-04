@@ -1,0 +1,23 @@
+query notionImportItems($runId: String!, $pagination: NotionImportPaginationInput) {
+  notionImportItems(runId: $runId, pagination: $pagination) {
+    edges {
+      node {
+        id
+        runId
+        kind
+        notionId
+        payload
+        payloadHash
+        parentId
+        position
+        createdAt
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    totalCount
+  }
+}

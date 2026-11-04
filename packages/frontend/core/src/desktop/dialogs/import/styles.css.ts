@@ -145,3 +145,63 @@ export const importItemPrefix = style({
 export const importItemSuffix = style({
   marginLeft: 'auto',
 });
+
+// ApiImportFlow styles
+export const apiImportForm = style({
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '16px',
+  margin: '16px 0',
+});
+
+export const apiImportField = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+});
+
+export const apiImportFieldLabel = style({
+  fontSize: cssVar('fontSm'),
+  fontWeight: '500',
+  color: cssVar('textPrimaryColor'),
+});
+
+export const ledgerSummary = style({
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+  margin: '16px 0',
+  padding: '12px',
+  background: cssVarV2('layer/background/secondary'),
+  borderRadius: '8px',
+});
+
+export const ledgerItem = style({
+  display: 'flex',
+  justifyContent: 'space-between',
+  padding: '4px 0',
+});
+
+export const ledgerLabel = style({
+  fontSize: cssVar('fontSm'),
+  color: cssVar('textSecondaryColor'),
+});
+
+export const ledgerValue = style({
+  fontSize: cssVar('fontSm'),
+  fontWeight: '600',
+  color: cssVar('textPrimaryColor'),
+});
+
+export const retentionMessage = style({
+  width: '100%',
+  fontSize: cssVar('fontXs'),
+  lineHeight: cssVar('lineHeight'),
+  color: cssVar('textSecondaryColor'),
+  padding: '12px',
+  background: cssVarV2('layer/background/tertiary'),
+  borderRadius: '8px',
+  marginBottom: '16px',
+});

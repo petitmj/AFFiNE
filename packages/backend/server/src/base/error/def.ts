@@ -1033,4 +1033,34 @@ export const USER_FRIENDLY_ERRORS = {
     type: 'quota_exceeded',
     message: 'You have exceeded the comment attachment size quota.',
   },
+
+  // Notion import errors
+  notion_import_not_found: {
+    type: 'resource_not_found',
+    args: { runId: 'string' },
+    message: ({ runId }) => `Notion import run not found: ${runId}.`,
+  },
+  notion_import_token_invalid: {
+    type: 'authentication_required',
+    message: 'The Notion integration token is invalid or has been revoked.',
+  },
+  notion_import_in_progress: {
+    type: 'action_forbidden',
+    args: { runId: 'string' },
+    message: ({ runId }) => `Notion import run ${runId} is already in progress.`,
+  },
+  notion_import_failed: {
+    type: 'internal_server_error',
+    args: { runId: 'string', reason: 'string' },
+    message: ({ runId, reason }) => `Notion import run ${runId} failed: ${reason}.`,
+  },
+  notion_import_expired: {
+    type: 'action_forbidden',
+    args: { runId: 'string' },
+    message: ({ runId }) => `Notion import run ${runId} has expired.`,
+  },
+  notion_import_quota_exceeded: {
+    type: 'quota_exceeded',
+    message: 'Notion import quota exceeded. Please try again later.',
+  },
 } satisfies Record<string, UserFriendlyErrorOptions>;

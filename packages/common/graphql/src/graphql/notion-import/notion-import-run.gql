@@ -1,0 +1,20 @@
+query notionImportRun($runId: String!) {
+  notionImportRun(runId: $runId) {
+    id
+    workspaceId
+    createdBy
+    status
+    mode
+    scope
+    progress
+    includeBlockComments
+    lastError
+    leaseOwner
+    leaseExpiresAt
+    expiresAt
+    createdAt
+    updatedAt
+    canRetry
+    canCancel
+  }
+}

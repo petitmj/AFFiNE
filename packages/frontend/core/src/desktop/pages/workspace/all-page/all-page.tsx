@@ -14,8 +14,8 @@ import { CollectionRulesService } from '@affine/core/modules/collection-rules';
 import type { FilterParams } from '@affine/core/modules/collection-rules/types';
 import { WorkspaceLocalState } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
-import { useLiveData, useService } from '@toeverything/infra';
-import { useCallback, useEffect, useState } from 'react';
+import { LiveData, useLiveData, useService } from '@toeverything/infra';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 
 import {
   ViewBody,
@@ -28,6 +28,10 @@ import * as styles from './all-page.css';
 import { AllDocsHeader } from './all-page-header';
 import { MigrationAllDocsDataNotification } from './migration-data';
 import { PinnedCollections } from './pinned-collections';
+
+const ShelfPage = lazy(() =>
+  import('../shelf/shelf-page').then(m => ({ default: m.ShelfPage }))
+);
 
 const DefaultDisplayPreference: {
   [key in ViewMode]: ExplorerDisplayPreference;
@@ -408,9 +412,32 @@ export const AllPage = () => {
   );
 };
 
-export const Component = () => {
+/**
+ * Home mode router: the shelf is the default home; the classic All docs
+ * view remains one click away. Branching here (instead of in the router)
+ * keeps every verified `openAll()` call site and desktop tab behaviour
+ * working unchanged - /all simply renders different content per mode.
+ */
+const HomeMode = () => {
+  const workspaceLocalState = useService(WorkspaceLocalState);
+  const mode = useLiveData(
+    LiveData.from(
+      workspaceLocalState.watch<'shelf' | 'classic'>('homeMode'),
+      'shelf' // shelf is the default (user decision)
+    )
+  );
+
+  if (mode === 'shelf') {
+    return (
+      <Suspense fallback={<div className="affine-loading" />}>
+        <ShelfPage />
+      </Suspense>
+    );
+  }
   return <AllPage />;
 };
+
+export const Component = () => <HomeMode />;
 
 /**
  * Since split view allows users to open multiple all docs simultaneously, each with its own state,

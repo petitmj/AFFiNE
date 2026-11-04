@@ -1,0 +1,8 @@
+mutation resumeNotionImport($input: NotionImportResumeInput!) {
+  resumeNotionImport(input: $input) {
+    id
+    status
+    canRetry
+    canCancel
+  }
+}

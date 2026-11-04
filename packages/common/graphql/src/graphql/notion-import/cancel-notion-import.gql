@@ -1,0 +1,8 @@
+mutation cancelNotionImport($input: NotionImportCancelInput!) {
+  cancelNotionImport(input: $input) {
+    id
+    status
+    canRetry
+    canCancel
+  }
+}

@@ -19,9 +19,11 @@ import { Service } from '@toeverything/infra';
 
 import type { ExplorerIconService } from '../../explorer-icon/services/explorer-icon';
 import type { OrganizeService } from '../../organize';
+import type { NotionImportService } from '../../notion-import';
 import type { TagService } from '../../tag';
 import type { WorkspaceService } from '../../workspace';
 import { getAFFiNEWorkspaceSchema } from '../../workspace';
+import { buildImportBatch } from '../../notion-import/encodings';
 
 const logger = new DebugLogger('import');
 
@@ -163,6 +165,48 @@ export class ImportService extends Service {
       tagService: options.tag ? this.tagService : undefined,
       logger,
     });
+  }
+
+  /**
+   * Import from a Notion API run.
+   * This is the entry point for the Notion API import tier (Track A).
+   */
+  async importNotionApiRun(
+    runId: string,
+    context?: ImportRunContext & {
+      notionImportService?: NotionImportService;
+    }
+  ) {
+    const notionImportService = context?.notionImportService ?? this.framework.get(NotionImportService);
+
+    // Collect all items and files from the run
+    const [items, files] = await Promise.all([
+      notionImportService.collectItems(runId),
+      notionImportService.collectFiles(runId),
+    ]);
+
+    // Build the import batch
+    const { docs, blobs, warnings } = await buildImportBatch(items, files);
+
+    // Create commit service with the same options as other import tiers
+    const commitService = this.createCommitService({
+      organize: true,
+      explorerIcon: true,
+      tag: true,
+    });
+
+    // Commit the batch
+    const result = await commitService.commitBatch({
+      docs: docs.map(d => ({
+        id: d.id,
+        snapshot: d.snapshot,
+      })),
+      blobs,
+      warnings,
+      done: true,
+    });
+
+    return result;
   }
 }
 

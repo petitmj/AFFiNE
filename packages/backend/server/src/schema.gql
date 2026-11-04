@@ -3025,3 +3025,269 @@ type tokenType {
   sessionToken: String
   token: String!
 }
+# ============================================================================
+# Notion Zero-Loss Import GraphQL Schema
+# ============================================================================
+
+enum NotionImportRunStatus {
+  Pending
+  Running
+  Paused
+  Staged
+  Failed
+  Cancelled
+  Expired
+}
+
+enum NotionImportTaskKind {
+  Users
+  Search
+  Page
+  Database
+  DatabaseRows
+  BlockChildren
+  PropertyPage
+  Comments
+  DownloadFile
+}
+
+enum NotionImportTaskStatus {
+  Pending
+  Leased
+  Done
+  Failed
+}
+
+enum NotionImportItemKind {
+  User
+  Page
+  Database
+  DataSource
+  Block
+  Property
+  Comment
+}
+
+enum NotionImportFileStatus {
+  Pending
+  Stored
+  Unavailable
+}
+
+enum NotionImportOutcome {
+  Mapped
+  Degraded
+  PreservedOnly
+  Unrecoverable
+}
+
+input NotionImportInput {
+  workspaceId: String!
+  token: String!
+  mode: NotionImportMode! = merge
+  includeBlockComments: Boolean = false
+}
+
+enum NotionImportMode {
+  merge
+  skip-if-diverged
+  overwrite
+}
+
+type NotionImportRun {
+  id: String!
+  workspaceId: String!
+  createdBy: String
+  status: NotionImportRunStatus!
+  mode: NotionImportMode!
+  scope: JSON!
+  progress: JSON!
+  includeBlockComments: Boolean!
+  lastError: String
+  leaseOwner: String
+  leaseExpiresAt: DateTime
+  expiresAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Computed fields
+  canRetry: Boolean!
+  canCancel: Boolean!
+}
+
+type NotionImportRunProgress {
+  phase: String
+  completed: Int!
+  total: Int!
+}
+
+type NotionImportRunCounters {
+  users: Int!
+  pages: Int!
+  databases: Int!
+  files: Int!
+  blocks: Int!
+  warnings: Int!
+  unrecoverable: Int!
+}
+
+type NotionImportTask {
+  id: String!
+  runId: String!
+  kind: NotionImportTaskKind!
+  targetId: String!
+  status: NotionImportTaskStatus!
+  cursor: String
+  attempts: Int!
+  nextAttemptAt: DateTime
+  lastError: String
+  leaseOwner: String
+  leaseExpiresAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type NotionImportItem {
+  id: String!
+  runId: String!
+  kind: NotionImportItemKind!
+  notionId: String!
+  payload: JSON!
+  payloadHash: String!
+  parentId: String
+  position: Int
+  createdAt: DateTime!
+}
+
+type NotionImportFile {
+  id: String!
+  runId: String!
+  ownerId: String!
+  slot: String!
+  blobKey: String
+  status: NotionImportFileStatus!
+  error: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type NotionImportLedgerEntry {
+  id: String!
+  runId: String!
+  notionId: String!
+  subject: String!
+  outcome: NotionImportOutcome!
+  warningCode: String
+  contentHash: String
+  message: String
+  createdAt: DateTime!
+}
+
+type NotionImportLedgerSummary {
+  total: Int!
+  mapped: Int!
+  degraded: Int!
+  preservedOnly: Int!
+  unrecoverable: Int!
+}
+
+input NotionImportPaginationInput {
+  after: String
+  first: Int = 50
+}
+
+type NotionImportItemConnection {
+  edges: [NotionImportItemEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type NotionImportItemEdge {
+  node: NotionImportItem!
+  cursor: String!
+}
+
+type NotionImportFileConnection {
+  edges: [NotionImportFileEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type NotionImportFileEdge {
+  node: NotionImportFile!
+  cursor: String!
+}
+
+type NotionImportLedgerConnection {
+  edges: [NotionImportLedgerEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type NotionImportLedgerEdge {
+  node: NotionImportLedgerEntry!
+  cursor: String!
+}
+
+input NotionImportPauseInput {
+  runId: String!
+}
+
+input NotionImportResumeInput {
+  runId: String!
+}
+
+input NotionImportCancelInput {
+  runId: String!
+}
+
+input NotionImportRetryInput {
+  runId: String!
+}
+
+# Mutations
+type Mutation {
+  """Start a new Notion import run"""
+  notionImport(input: NotionImportInput!): NotionImportRun! @permission(action: "Workspace.NotionImport.Create")
+
+  """Pause a running Notion import"""
+  pauseNotionImport(input: NotionImportPauseInput!): NotionImportRun! @permission(action: "Workspace.NotionImport.Pause")
+
+  """Resume a paused Notion import"""
+  resumeNotionImport(input: NotionImportResumeInput!): NotionImportRun! @permission(action: "Workspace.NotionImport.Resume")
+
+  """Cancel a Notion import run"""
+  cancelNotionImport(input: NotionImportCancelInput!): NotionImportRun! @permission(action: "Workspace.NotionImport.Cancel")
+
+  """Retry a failed Notion import run"""
+  retryNotionImport(input: NotionImportRetryInput!): NotionImportRun! @permission(action: "Workspace.NotionImport.Retry")
+}
+
+# Queries
+type Query {
+  """Get a Notion import run by ID"""
+  notionImportRun(runId: String!): NotionImportRun @permission(action: "Workspace.NotionImport.Read")
+
+  """List Notion import runs for the current workspace"""
+  notionImportRuns(pagination: PaginationInput): PaginatedNotionImportRun! @permission(action: "Workspace.NotionImport.Read")
+
+  """Get items from a Notion import run"""
+  notionImportItems(runId: String!, pagination: NotionImportPaginationInput): NotionImportItemConnection! @permission(action: "Workspace.NotionImport.Read")
+
+  """Get files from a Notion import run"""
+  notionImportFiles(runId: String!, pagination: NotionImportPaginationInput): NotionImportFileConnection! @permission(action: "Workspace.NotionImport.Read")
+
+  """Get ledger entries from a Notion import run"""
+  notionImportLedger(runId: String!, pagination: NotionImportPaginationInput): NotionImportLedgerConnection! @permission(action: "Workspace.NotionImport.Read")
+}
+
+type PaginatedNotionImportRun {
+  edges: [NotionImportRunEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type NotionImportRunEdge {
+  node: NotionImportRun!
+  cursor: String!
+}

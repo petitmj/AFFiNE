@@ -57,6 +57,7 @@ import {
 } from 'react';
 
 import * as style from './styles.css';
+import { ApiImportFlow } from './api-import-flow';
 
 const logger = new DebugLogger('import');
 
@@ -69,6 +70,7 @@ type ImportType =
   | 'markdown'
   | 'markdownZip'
   | 'notion'
+  | 'notionApi'
   | 'obsidian'
   | 'bear'
   | 'oneNote'
@@ -207,6 +209,17 @@ const importOptions = [
     suffixTooltip: 'com.affine.import.notion.tooltip',
     testId: 'editor-option-menu-import-notion',
     type: 'notion' as ImportType,
+  },
+  {
+    key: 'notionApi',
+    label: 'com.affine.import.notion-api',
+    prefixIcon: <NotionIcon color={cssVar('black')} width={20} height={20} />,
+    suffixIcon: (
+      <HelpIcon color={cssVarV2('icon/primary')} width={20} height={20} />
+    ),
+    suffixTooltip: 'com.affine.import.notion-api.tooltip',
+    testId: 'editor-option-menu-import-notion-api',
+    type: 'notionApi' as ImportType,
   },
   {
     key: 'obsidian',
@@ -437,7 +450,35 @@ const importConfigs: Record<ImportType, ImportConfig> = {
       };
     },
   },
+  notionApi: {
+    fileOptions: { acceptType: 'Skip', multiple: false },
+    importFunction: async ({ importService, context }) => {
+      // This is handled by the ApiImportFlow component, not by file picker
+      // The actual import happens through importNotionApiRun
+      return { docIds: [], entryId: undefined };
+    },
+  },
 };
+
+// Import the NotionImportService for use in the ApiImportFlow
+import { NotionImportService } from '@affine/core/modules/notion-import';
+import { useService } from '@toeverything/infra';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { groupBy } from 'lodash-es';
+
+// Helper to convert import error to error state
+function toImportErrorState(error: any): ImportErrorState {
+  if (error instanceof Error) {
+    return {
+      code: 'import_failed',
+      message: error.message,
+    };
+  }
+  return {
+    code: 'import_failed',
+    message: String(error),
+  };
+}
 
 const ImportOptionItem = ({
   label,
@@ -655,10 +696,12 @@ export const ImportDialog = ({
     completed: number;
     total: number;
   } | null>(null);
+  const [apiImportRunId, setApiImportRunId] = useState<string | null>(null);
   const importAbortControllerRef = useRef<AbortController | null>(null);
   const workspace = useService(WorkspaceService).workspace;
   const docCollection = workspace.docCollection;
   const importService = useService(ImportService);
+  const notionImportService = useService(NotionImportService);
 
   const globalDialogService = useService(GlobalDialogService);
 
@@ -705,6 +748,15 @@ export const ImportDialog = ({
     async (type: ImportType) => {
       setImportError(null);
       setImportProgress(null);
+      
+      // Handle Notion API import specially - show the ApiImportFlow
+      if (type === 'notionApi') {
+        setStatus('importing');
+        // Set a dummy runId to trigger ApiImportFlow rendering
+        setApiImportRunId('notion-api-flow');
+        return;
+      }
+      
       try {
         const importConfig = importConfigs[type];
         if (importConfig.nativeOnly && !BUILD_CONFIG.isElectron) {
@@ -818,15 +870,49 @@ export const ImportDialog = ({
   const handleRetry = () => {
     setImportProgress(null);
     setStatus('idle');
+    setApiImportRunId(null);
   };
 
   const handleCancel = useCallback(() => {
     importAbortControllerRef.current?.abort();
+    if (apiImportRunId) {
+      notionImportService.cancel(apiImportRunId).catch(() => {});
+      setApiImportRunId(null);
+    }
+    setStatus('idle');
+  }, [apiImportRunId, notionImportService]);
+
+  const handleApiImportComplete = useCallback((docIds: string[]) => {
+    setStatus('success');
+    setImportResult({
+      docIds,
+      entryId: undefined,
+      isWorkspaceFile: false,
+    });
+    setApiImportRunId(null);
+  }, []);
+
+  const handleApiImportError = useCallback((error: Error) => {
+    setStatus('error');
+    setImportError(toImportErrorState(error));
+    setApiImportRunId(null);
+  }, []);
+
+  const handleApiImportCancel = useCallback(() => {
+    setStatus('idle');
+    setApiImportRunId(null);
   }, []);
 
   const statusComponents = {
     idle: <ImportOptions onImport={handleImport} />,
-    importing: (
+    importing: apiImportRunId ? (
+      <ApiImportFlow
+        onComplete={handleApiImportComplete}
+        onError={handleApiImportError}
+        onCancel={handleApiImportCancel}
+        initialRunId={apiImportRunId === 'notion-api-flow' ? null : apiImportRunId}
+      />
+    ) : (
       <ImportingStatus progress={importProgress} onCancel={handleCancel} />
     ),
     success: (

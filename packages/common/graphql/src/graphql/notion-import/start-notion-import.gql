@@ -1,0 +1,11 @@
+mutation startNotionImport($input: NotionImportInput!) {
+  notionImport(input: $input) {
+    id
+    status
+    workspaceId
+    createdAt
+    mode
+    canRetry
+    canCancel
+  }
+}

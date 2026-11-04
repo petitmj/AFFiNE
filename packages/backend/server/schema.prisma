@@ -1535,3 +1535,187 @@ model CalendarEventInstance {
   @@index([calendarEventId, startAtUtc])
   @@map("calendar_event_instances")
 }
+
+// ============================================================================
+// Notion Zero-Loss Import Models
+// ============================================================================
+
+enum NotionImportRunStatus {
+  Pending
+  Running
+  Paused
+  Staged
+  Failed
+  Cancelled
+  Expired
+}
+
+enum NotionImportTaskKind {
+  Users
+  Search
+  Page
+  Database
+  DatabaseRows
+  BlockChildren
+  PropertyPage
+  Comments
+  DownloadFile
+}
+
+enum NotionImportTaskStatus {
+  Pending
+  Leased
+  Done
+  Failed
+}
+
+enum NotionImportItemKind {
+  User
+  Page
+  Database
+  DataSource
+  Block
+  Property
+  Comment
+}
+
+enum NotionImportFileStatus {
+  Pending
+  Stored
+  Unavailable
+}
+
+enum NotionImportOutcome {
+  Mapped
+  Degraded
+  PreservedOnly
+  Unrecoverable
+}
+
+/// One Notion import run. The integration token is stored encrypted and is
+/// deleted as soon as the run can no longer need it.
+model NotionImportRun {
+  id                   String                @id @default(uuid()) @db.VarChar
+  workspaceId          String                @map("workspace_id") @db.VarChar
+  createdBy            String?               @map("created_by") @db.VarChar
+  status               NotionImportRunStatus @default(Pending)
+  tokenCipher          String?               @map("token_cipher") @db.Text
+  scope                Json                  @default("{}") @db.JsonB
+  progress             Json                  @default("{}") @db.JsonB
+  includeBlockComments Boolean               @default(false) @map("include_block_comments")
+  lastError            String?               @map("last_error") @db.Text
+  leaseOwner           String?               @map("lease_owner") @db.VarChar
+  leaseExpiresAt       DateTime?             @map("lease_expires_at") @db.Timestamptz(3)
+  expiresAt            DateTime?             @map("expires_at") @db.Timestamptz(3)
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  workspace     Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdByUser User?                 @relation("notionImportRunsCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  tasks         NotionImportTask[]
+  items         NotionImportItem[]
+  files         NotionImportFile[]
+  ledger        NotionImportLedger[]
+
+  @@index([workspaceId, status])
+  @@index([status, leaseExpiresAt])
+  @@map("notion_import_runs")
+}
+
+/// One unit of crawl work. The (run, kind, target) unique key makes
+/// enqueueing idempotent; `cursor` is the crash-resume checkpoint.
+model NotionImportTask {
+  id            String                 @id @default(uuid()) @db.VarChar
+  runId         String                 @map("run_id") @db.VarChar
+  kind          NotionImportTaskKind
+  targetId      String                 @map("target_id") @db.VarChar
+  status        NotionImportTaskStatus @default(Pending)
+  cursor        String?                @db.Text
+  attempts      Int                    @default(0)
+  nextAttemptAt DateTime?              @map("next_attempt_at") @db.Timestamptz(3)
+  lastError     String?                @map("last_error") @db.Text
+  leaseOwner    String?                @map("lease_owner") @db.VarChar
+  leaseExpiresAt DateTime?            @map("lease_expires_at") @db.Timestamptz(3)
+  createdAt     DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  run NotionImportRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, kind, targetId])
+  @@index([runId, status, nextAttemptAt])
+  @@index([leaseOwner, leaseExpiresAt])
+  @@map("notion_import_tasks")
+}
+
+/// One staged Notion object (user, page, database, block, etc.)
+model NotionImportItem {
+  id           String               @id @default(uuid()) @db.VarChar
+  runId        String               @map("run_id") @db.VarChar
+  kind         NotionImportItemKind
+  notionId     String               @map("notion_id") @db.VarChar
+  payload      Json                 @db.JsonB
+  payloadHash  String               @map("payload_hash") @db.VarChar
+  parentId     String?              @map("parent_id") @db.VarChar
+  position     Int?
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  run NotionImportRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, kind, notionId])
+  @@index([runId, kind, notionId])
+  @@map("notion_import_items")
+}
+
+/// One file to mirror from Notion to AFFiNE blob storage.
+model NotionImportFile {
+  id        String              @id @default(uuid()) @db.VarChar
+  runId     String              @map("run_id") @db.VarChar
+  ownerId   String              @map("owner_id") @db.VarChar
+  slot      String              @db.VarChar
+  blobKey   String?             @map("blob_key") @db.VarChar
+  status    NotionImportFileStatus @default(Pending)
+  error     String?             @db.Text
+  createdAt DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  run NotionImportRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, ownerId, slot])
+  @@map("notion_import_files")
+}
+
+/// One ledger entry recording the outcome of mapping one Notion object.
+model NotionImportLedger {
+  id              String              @id @default(uuid()) @db.VarChar
+  runId           String              @map("run_id") @db.VarChar
+  notionId        String              @map("notion_id") @db.VarChar
+  subject         String              @db.VarChar
+  outcome         NotionImportOutcome
+  warningCode     String?             @map("warning_code") @db.VarChar
+  contentHash     String?             @map("content_hash") @db.VarChar
+  message         String?             @db.Text
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  run NotionImportRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, notionId, subject])
+  @@map("notion_import_ledger")
+}
+
+/// Preserved records outlive the import run's retention window.
+/// They store raw Notion JSON that AFFiNE cannot map natively.
+model NotionPreservedRecord {
+  id           String    @id @default(uuid()) @db.VarChar
+  workspaceId  String    @map("workspace_id") @db.VarChar
+  kind         String    @db.VarChar
+  notionId     String    @map("notion_id") @db.VarChar
+  payload      Json      @db.JsonB
+  payloadHash  String    @map("payload_hash") @db.VarChar
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, kind, notionId])
+  @@map("notion_preserved_records")
+}

@@ -1,0 +1,8 @@
+mutation pauseNotionImport($input: NotionImportPauseInput!) {
+  pauseNotionImport(input: $input) {
+    id
+    status
+    canRetry
+    canCancel
+  }
+}

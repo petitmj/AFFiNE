@@ -1,0 +1,23 @@
+query notionImportLedger($runId: String!, $pagination: NotionImportPaginationInput) {
+  notionImportLedger(runId: $runId, pagination: $pagination) {
+    edges {
+      node {
+        id
+        runId
+        notionId
+        subject
+        outcome
+        warningCode
+        contentHash
+        message
+        createdAt
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    totalCount
+  }
+}

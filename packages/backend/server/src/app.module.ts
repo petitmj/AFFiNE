@@ -63,6 +63,7 @@ import { CopilotModule, CopilotWorkerModule } from './plugins/copilot';
 import { GCloudModule } from './plugins/gcloud';
 import { IndexerModule } from './plugins/indexer';
 import { LicenseModule } from './plugins/license';
+import { NotionImportModule } from './core/notion-import/module';
 import { OAuthModule } from './plugins/oauth';
 import { PaymentModule } from './plugins/payment';
 import { WorkerModule } from './plugins/worker';
@@ -217,7 +218,8 @@ export function buildAppModule(env: Env) {
       OAuthModule,
       CalendarModule,
       TelemetryModule,
-      CommentModule
+      CommentModule,
+      NotionImportModule
     )
     // worker for and self-hosted API only for self-host and local development only
     .useIf(

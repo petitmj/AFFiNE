@@ -1,0 +1,8 @@
+mutation retryNotionImport($input: NotionImportRetryInput!) {
+  retryNotionImport(input: $input) {
+    id
+    status
+    canRetry
+    canCancel
+  }
+}

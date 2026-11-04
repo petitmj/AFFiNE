@@ -45,6 +45,7 @@ import { WorkspaceModel } from './workspace';
 import { WorkspaceAnalyticsModel } from './workspace-analytics';
 import { WorkspaceCalendarModel } from './workspace-calendar';
 import { WorkspaceUserModel } from './workspace-user';
+import { NotionImportModel } from './notion-import';
 
 const MODELS = {
   user: UserModel,
@@ -82,6 +83,7 @@ const MODELS = {
   calendarEventInstance: CalendarEventInstanceModel,
   workspaceCalendar: WorkspaceCalendarModel,
   workspaceAnalytics: WorkspaceAnalyticsModel,
+  notionImport: NotionImportModel,
 };
 
 type ModelsType = {
