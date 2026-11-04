@@ -12,6 +12,7 @@ import {
 import { ExternalMenuLinkItem } from '@affine/core/modules/app-sidebar/views/menu-item/external-menu-link-item';
 import { AuthService, ServerService } from '@affine/core/modules/cloud';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
+import { ShelfService } from '@affine/core/modules/shelf';
 import { FeatureFlagService } from '@affine/core/modules/feature-flag';
 import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/services/cmdk';
 import type { Workspace } from '@affine/core/modules/workspace';
@@ -84,6 +85,23 @@ const AllDocsButton = () => {
       <span data-testid="all-pages">
         {t['com.affine.workspaceSubPath.all']()}
       </span>
+    </MenuLinkItem>
+  );
+};
+
+const ShelfButton = () => {
+  const t = useI18n();
+  // resolving the service starts the per-device "documents opened" tracker,
+  // so it must live in something that is always mounted
+  useService(ShelfService);
+  const { workbenchService } = useServices({ WorkbenchService });
+  const workbench = workbenchService.workbench;
+  const active = useLiveData(
+    workbench.location$.selector(location => location.pathname === '/shelf')
+  );
+  return (
+    <MenuLinkItem icon={<AllDocsIcon />} active={active} to={'/shelf'}>
+      <span data-testid="shelf">{t['com.affine.workspaceSubPath.shelf']()}</span>
     </MenuLinkItem>
   );
 };
@@ -212,6 +230,7 @@ export const RootAppSidebar = memo((): ReactElement => {
           <AddPageButton />
         </div>
         <AllDocsButton />
+        <ShelfButton />
         <AppSidebarJournalButton />
         {sessionStatus === 'authenticated' && <NotificationButton />}
         <AIChatButton />

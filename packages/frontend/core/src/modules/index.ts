@@ -54,6 +54,7 @@ import { configureQuickSearchModule } from './quicksearch';
 import { configSearchMenuModule } from './search-menu';
 import { configureShareDocsModule } from './share-doc';
 import { configureShareSettingModule } from './share-setting';
+import { configureShelfModule } from './shelf';
 import {
   configureCommonGlobalStorageImpls,
   configureStorageModule,
@@ -98,6 +99,7 @@ export function configureCommonModules(framework: Framework) {
   configureDocLinksModule(framework);
   configureOrganizeModule(framework);
   configureFavoriteModule(framework);
+  configureShelfModule(framework);
   configureNavigationPanelModule(framework);
   configureThemeEditorModule(framework);
   configureEditorModule(framework);

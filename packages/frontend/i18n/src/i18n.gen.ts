@@ -8205,6 +8205,134 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.workspaceSubPath.chat"](): string;
     /**
+      * `Shelf`
+      */
+    ["com.affine.workspaceSubPath.shelf"](): string;
+    /**
+      * `Welcome to your shelf`
+      */
+    ["com.affine.shelf.title"](): string;
+    /**
+      * `Click around to open what you saved, or use the menu for a quicker way through.`
+      */
+    ["com.affine.shelf.subtitle"](): string;
+    /**
+      * `{{opened}} of {{total}} documents opened`
+      */
+    ["com.affine.shelf.opened"](options: {
+        readonly opened: string;
+        readonly total: string;
+    }): string;
+    /**
+      * `Ask the eagle`
+      */
+    ["com.affine.shelf.ask-eagle"](): string;
+    /**
+      * `Open AI chat`
+      */
+    ["com.affine.shelf.ask-eagle.aria"](): string;
+    /**
+      * `Hints`
+      */
+    ["com.affine.shelf.hints"](): string;
+    /**
+      * `Each book is a doc you saved. Each bay of the bookcase is a folder. The pin board shows the folder you edited last. Favorites sit at the front of a bay.`
+      */
+    ["com.affine.shelf.hints.body"](): string;
+    /**
+      * `Menu`
+      */
+    ["com.affine.shelf.menu"](): string;
+    /**
+      * `Show the shelf`
+      */
+    ["com.affine.shelf.view.scene"](): string;
+    /**
+      * `Browse as a list`
+      */
+    ["com.affine.shelf.view.list"](): string;
+    /**
+      * `Open all docs`
+      */
+    ["com.affine.shelf.all-docs"](): string;
+    /**
+      * `Colors`
+      */
+    ["com.affine.shelf.palette"](): string;
+    /**
+      * `Sunlit gold`
+      */
+    ["com.affine.shelf.palette.sunlit-gold"](): string;
+    /**
+      * `Royal violet`
+      */
+    ["com.affine.shelf.palette.royal-violet"](): string;
+    /**
+      * `Blend`
+      */
+    ["com.affine.shelf.palette.blend"](): string;
+    /**
+      * `Not in a folder`
+      */
+    ["com.affine.shelf.bay.unfiled"](): string;
+    /**
+      * `This shelf is empty.`
+      */
+    ["com.affine.shelf.bay.empty"](): string;
+    /**
+      * `Next books on {{name}}`
+      */
+    ["com.affine.shelf.bay.more"](options: {
+        readonly name: string;
+    }): string;
+    /**
+      * `Previous books on {{name}}`
+      */
+    ["com.affine.shelf.bay.previous"](options: {
+        readonly name: string;
+    }): string;
+    /**
+      * `Page {{page}} of {{count}}`
+      */
+    ["com.affine.shelf.bay.page"](options: {
+        readonly page: string;
+        readonly count: string;
+    }): string;
+    /**
+      * `Next shelves`
+      */
+    ["com.affine.shelf.shelves.next"](): string;
+    /**
+      * `Previous shelves`
+      */
+    ["com.affine.shelf.shelves.previous"](): string;
+    /**
+      * `Last edited · {{name}}`
+      */
+    ["com.affine.shelf.pin-board.folder"](options: {
+        readonly name: string;
+    }): string;
+    /**
+      * `Last edited`
+      */
+    ["com.affine.shelf.pin-board.recent"](): string;
+    /**
+      * `favorite`
+      */
+    ["com.affine.shelf.book.favorite"](): string;
+    /**
+      * `opened`
+      */
+    ["com.affine.shelf.book.opened"](): string;
+    /**
+      * `Patterns inspired by Ndebele house painting, Ghanaian kente weaving and Yoruba adire indigo cloth.`
+      */
+    ["com.affine.shelf.credit"](): string;
+    /**
+      * `Nothing on the shelf yet. Create a doc or import from Notion and it will appear here.`
+      */
+    ["com.affine.shelf.empty"](): string;
+    /**
       * `Trash`
       */
     ["com.affine.workspaceSubPath.trash"](): string;
