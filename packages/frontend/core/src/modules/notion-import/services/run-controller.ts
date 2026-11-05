@@ -3,6 +3,7 @@ import {
   planFinalBatch,
   type PlannedBatch,
 } from '../domain/batching';
+import type { JsonObject } from '../domain/json';
 import { CODES } from '../domain/ledger';
 import { buildReport, type ReportMeta } from '../domain/report';
 import {
@@ -145,11 +146,22 @@ export class NotionImportController {
     if (this.runId) await this.deps.api.pause(this.runId);
   }
 
-  /** a paused or failed run needs the Notion token again */
-  async resume(token?: string): Promise<void> {
-    if (!this.runId) return;
-    await this.deps.api.resume(this.runId, token);
-    this.set({ phase: 'extracting', error: undefined });
+  /**
+   * A paused run is still being followed, so it only needs the server told.
+   * A failed run is not followed any more: it needs the Notion token again
+   * (the server never keeps it readable) and then a fresh follow.
+   */
+  async resume(token?: string, signal?: AbortSignal): Promise<RunState> {
+    if (!this.runId) return this.state;
+    const wasFailed = this.state.phase === 'failed';
+    try {
+      await this.deps.api.resume(this.runId, token);
+      this.set({ phase: 'extracting', error: undefined });
+      if (!wasFailed) return this.state;
+      return await this.follow(await this.deps.api.run(this.runId), signal);
+    } catch (error) {
+      return this.fail(error);
+    }
   }
 
   async cancel(): Promise<void> {
@@ -295,9 +307,9 @@ export class NotionImportController {
     items: readonly StagedItemLike[],
     committed: ReadonlySet<string>
   ) {
-    const raw = new Map(
-      items.filter(i => i.kind === 'page').map(i => [i.notionId, i.payload])
-    );
+    const raw = new Map<string, JsonObject>();
+    for (const i of items)
+      if (!raw.has(i.notionId)) raw.set(i.notionId, i.payload);
     for (const e of out.ledger.entries()) {
       if (e.affineDocId && !committed.has(e.affineDocId)) {
         out.ledger.record(

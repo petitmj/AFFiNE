@@ -16,6 +16,7 @@ import {
   type ImportRunContext,
   ImportService,
 } from '@affine/core/modules/import';
+import { NotionImportService } from '@affine/core/modules/notion-import';
 import { UrlService } from '@affine/core/modules/url';
 import {
   getAFFiNEWorkspaceSchema,
@@ -56,6 +57,7 @@ import {
   useState,
 } from 'react';
 
+import { NotionApiWizard } from './notion-api-wizard';
 import * as style from './styles.css';
 
 const logger = new DebugLogger('import');
@@ -84,7 +86,7 @@ type AcceptType =
   | 'OneNote'
   | 'Directory'
   | 'Skip'; // Skip is used for dotaffinefile
-type Status = 'idle' | 'importing' | 'success' | 'error';
+type Status = 'idle' | 'importing' | 'success' | 'error' | 'notionApi';
 type ImportErrorState = {
   code: string;
   message: string;
@@ -480,10 +482,13 @@ const ImportOptionItem = ({
 
 const ImportOptions = ({
   onImport,
+  onNotionApi,
 }: {
   onImport: (type: ImportType) => void;
+  onNotionApi: () => void;
 }) => {
   const t = useI18n();
+  const notionApiAvailable = useService(NotionImportService).available;
 
   return (
     <>
@@ -517,6 +522,27 @@ const ImportOptions = ({
             );
           }
         )}
+        {notionApiAvailable ? (
+          <ImportOptionItem
+            key="notionApi"
+            prefixIcon={
+              <NotionIcon color={cssVar('black')} width={20} height={20} />
+            }
+            suffixIcon={
+              <HelpIcon
+                color={cssVarV2('icon/primary')}
+                width={20}
+                height={20}
+              />
+            }
+            suffixTooltip="com.affine.import.notion-api.tooltip"
+            label="com.affine.import.notion-api"
+            type="notion"
+            onImport={() => onNotionApi()}
+            disabled={false}
+            data-testid="editor-option-menu-import-notion-api"
+          />
+        ) : null}
       </div>
       <div className={style.importModalTip}>
         {t['com.affine.import.modal.tip']()}{' '}
@@ -825,7 +851,18 @@ export const ImportDialog = ({
   }, []);
 
   const statusComponents = {
-    idle: <ImportOptions onImport={handleImport} />,
+    idle: (
+      <ImportOptions
+        onImport={handleImport}
+        onNotionApi={() => setStatus('notionApi')}
+      />
+    ),
+    notionApi: (
+      <NotionApiWizard
+        onBack={() => setStatus('idle')}
+        onFinish={docIds => close({ docIds })}
+      />
+    ),
     importing: (
       <ImportingStatus progress={importProgress} onCancel={handleCancel} />
     ),

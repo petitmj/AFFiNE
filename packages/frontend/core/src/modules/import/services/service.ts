@@ -9,6 +9,7 @@ import { DebugLogger } from '@affine/debug';
 import { snapshotFile } from '@blocksuite/affine/shared/utils';
 import {
   BearTransformer,
+  type ImportBatch,
   type ImportWarning,
   MarkdownTransformer,
   NotionHtmlTransformer,
@@ -145,6 +146,22 @@ export class ImportService extends Service {
       organize: true,
     });
     return commitNativeImport('oneNote', file, commitService, context);
+  }
+
+  /**
+   * One committer for a whole multi-batch import (the Notion API import).
+   * Batches are already planned and legal, so this only writes them; the
+   * same commit service is reused so folders and icons see earlier batches.
+   */
+  createBatchCommitter() {
+    const commitService = this.createCommitService({
+      organize: true,
+      explorerIcon: true,
+    });
+    return async (batch: ImportBatch) => {
+      const result = await commitService.commitBatch(batch);
+      return { docIds: result.docIds, warnings: result.warnings };
+    };
   }
 
   private createCommitService(options: {

@@ -8333,6 +8333,202 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.shelf.empty"](): string;
     /**
+      * `Notion (live import from the API)`
+      */
+    ["com.affine.import.notion-api"](): string;
+    /**
+      * `Reads your Notion workspace directly, so nothing depends on an export file. What AFFiNE cannot hold is kept in a report.`
+      */
+    ["com.affine.import.notion-api.tooltip"](): string;
+    /**
+      * `Import from Notion`
+      */
+    ["com.affine.import.notion-api.title"](): string;
+    /**
+      * `AFFiNE reads your pages, databases, files and comments through Notion's API. Anything AFFiNE cannot represent exactly is kept in a preserved file and listed in a report doc, so nothing is thrown away.`
+      */
+    ["com.affine.import.notion-api.intro"](): string;
+    /**
+      * `This needs a cloud workspace. For a local workspace, use the Notion zip import.`
+      */
+    ["com.affine.import.notion-api.unavailable"](): string;
+    /**
+      * `Notion integration token`
+      */
+    ["com.affine.import.notion-api.token.label"](): string;
+    /**
+      * `ntn_… or secret_…`
+      */
+    ["com.affine.import.notion-api.token.placeholder"](): string;
+    /**
+      * `Create an internal integration in Notion, share the pages you want with it, and paste its token. The token is sent to your AFFiNE server and is not stored in this browser.`
+      */
+    ["com.affine.import.notion-api.token.help"](): string;
+    /**
+      * `Everything shared with the integration`
+      */
+    ["com.affine.import.notion-api.scope.all"](): string;
+    /**
+      * `Only these pages or databases`
+      */
+    ["com.affine.import.notion-api.scope.some"](): string;
+    /**
+      * `One Notion link or id per line`
+      */
+    ["com.affine.import.notion-api.scope.placeholder"](): string;
+    /**
+      * `These lines are not Notion links or ids: {{lines}}`
+      */
+    ["com.affine.import.notion-api.scope.invalid"](options: {
+        readonly lines: string;
+    }): string;
+    /**
+      * `Also import comments on blocks`
+      */
+    ["com.affine.import.notion-api.comments"](): string;
+    /**
+      * `Start import`
+      */
+    ["com.affine.import.notion-api.start"](): string;
+    /**
+      * `Back`
+      */
+    ["com.affine.import.notion-api.back"](): string;
+    /**
+      * `An earlier import ({{status}}) is still available for this workspace.`
+      */
+    ["com.affine.import.notion-api.resume.found"](options: {
+        readonly status: string;
+    }): string;
+    /**
+      * `Continue it`
+      */
+    ["com.affine.import.notion-api.resume.continue"](): string;
+    /**
+      * `Starting…`
+      */
+    ["com.affine.import.notion-api.phase.creating"](): string;
+    /**
+      * `Reading from Notion… {{done}} of {{total}} steps`
+      */
+    ["com.affine.import.notion-api.phase.extracting"](options: {
+        readonly done: string;
+        readonly total: string;
+    }): string;
+    /**
+      * `Paused. Resume when you are ready.`
+      */
+    ["com.affine.import.notion-api.phase.paused"](): string;
+    /**
+      * `Loading what was read… {{count}} items`
+      */
+    ["com.affine.import.notion-api.phase.loading"](options: {
+        readonly count: string;
+    }): string;
+    /**
+      * `Converting to AFFiNE pages…`
+      */
+    ["com.affine.import.notion-api.phase.transforming"](): string;
+    /**
+      * `Writing pages… {{completed}} of {{total}}`
+      */
+    ["com.affine.import.notion-api.phase.committing"](options: {
+        readonly completed: string;
+        readonly total: string;
+    }): string;
+    /**
+      * `Recording the result…`
+      */
+    ["com.affine.import.notion-api.phase.reporting"](): string;
+    /**
+      * `{{count}} notices so far`
+      */
+    ["com.affine.import.notion-api.notices"](options: {
+        readonly count: string;
+    }): string;
+    /**
+      * `Pause`
+      */
+    ["com.affine.import.notion-api.pause"](): string;
+    /**
+      * `Resume`
+      */
+    ["com.affine.import.notion-api.resume"](): string;
+    /**
+      * `Cancel import`
+      */
+    ["com.affine.import.notion-api.cancel"](): string;
+    /**
+      * `Close and keep running`
+      */
+    ["com.affine.import.notion-api.keep-running"](): string;
+    /**
+      * `The import stopped`
+      */
+    ["com.affine.import.notion-api.failed.title"](): string;
+    /**
+      * `Paste the token again to continue`
+      */
+    ["com.affine.import.notion-api.failed.token"](): string;
+    /**
+      * `Continue`
+      */
+    ["com.affine.import.notion-api.failed.continue"](): string;
+    /**
+      * `Start over`
+      */
+    ["com.affine.import.notion-api.failed.restart"](): string;
+    /**
+      * `The import was cancelled. Pages already written are kept.`
+      */
+    ["com.affine.import.notion-api.cancelled"](): string;
+    /**
+      * `You left while the import was running. It continues on the server; reopen this wizard to pick it up.`
+      */
+    ["com.affine.import.notion-api.detached"](): string;
+    /**
+      * `Import finished`
+      */
+    ["com.affine.import.notion-api.done.title"](): string;
+    /**
+      * `{{count}} pages were written to this workspace.`
+      */
+    ["com.affine.import.notion-api.done.summary"](options: {
+        readonly count: string;
+    }): string;
+    /**
+      * `Imported as they were`
+      */
+    ["com.affine.import.notion-api.outcome.mapped"](): string;
+    /**
+      * `Imported with a difference`
+      */
+    ["com.affine.import.notion-api.outcome.degraded"](): string;
+    /**
+      * `Kept as raw data only`
+      */
+    ["com.affine.import.notion-api.outcome.preserved"](): string;
+    /**
+      * `Could not be read or written`
+      */
+    ["com.affine.import.notion-api.outcome.unrecoverable"](): string;
+    /**
+      * `Open the report`
+      */
+    ["com.affine.import.notion-api.done.report"](): string;
+    /**
+      * `Download the preserved file`
+      */
+    ["com.affine.import.notion-api.done.download"](): string;
+    /**
+      * `Download what the server keeps`
+      */
+    ["com.affine.import.notion-api.done.download-server"](): string;
+    /**
+      * `Done`
+      */
+    ["com.affine.import.notion-api.done.finish"](): string;
+    /**
       * `Trash`
       */
     ["com.affine.workspaceSubPath.trash"](): string;

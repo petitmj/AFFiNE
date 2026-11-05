@@ -35,6 +35,7 @@ import { configureGlobalContextModule } from './global-context';
 import { configureI18nModule } from './i18n';
 import { configureIconPickerModule } from './icon-picker';
 import { configureImportModule } from './import';
+import { configureNotionImportModule } from './notion-import';
 import { configureImportClipperModule } from './import-clipper';
 import { configureImportTemplateModule } from './import-template';
 import { configureIntegrationModule } from './integration';
@@ -107,6 +108,7 @@ export function configureCommonModules(framework: Framework) {
   configureEditorSettingModule(framework);
   configureImportTemplateModule(framework);
   configureImportModule(framework);
+  configureNotionImportModule(framework);
   configureUserspaceModule(framework);
   configureAppSidebarModule(framework);
   configureJournalModule(framework);
