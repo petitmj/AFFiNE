@@ -8,6 +8,7 @@ import { selectPropertyConfig } from './select/cell-renderer.js';
 import { textPropertyConfig } from './text/cell-renderer.js';
 
 export * from './converts.js';
+export { SelectCell } from './select/cell-renderer.js';
 export * from './number/types.js';
 export * from './select/define.js';
 export const propertyPresets = {
