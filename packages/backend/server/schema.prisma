@@ -54,6 +54,7 @@ model User {
   workspaceMemberLastAccesses WorkspaceMemberLastAccess[]
   quotaState                  EffectiveUserQuotaState?
   ownedQuotaStates            EffectiveWorkspaceQuotaState[]
+  notionImportRuns            NotionImportRun[]             @relation("notionImportRunsCreatedBy")
 
   @@index([email])
   @@map("users")
@@ -213,6 +214,7 @@ model Workspace {
   docGrants                  DocGrant[]
   mcpCredentials             McpCredential[]
   artifacts                  WorkspaceArtifact[]
+  notionImportRuns           NotionImportRun[]
 
   @@index([lastCheckEmbeddings])
   @@index([createdAt])

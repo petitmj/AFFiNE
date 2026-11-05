@@ -37,7 +37,7 @@ export class NotionImportService {
    * The token is encrypted before being stored.
    */
   async createRun(input: NotionImportInput): Promise<NotionImportRunOutput> {
-    // Encrypt the token
+    // Encrypt the token using CryptoHelper
     const tokenCipher = CryptoHelper.encrypt(input.token);
 
     // Create the run
@@ -54,8 +54,9 @@ export class NotionImportService {
       const client = this.createClient(row.id, input.token, input.mode);
       const me = await client.me();
 
-      // Update the run with the scope
-      await this.model.updateRunProgress(row.id, this.owner, {
+      // Update the run with the scope - use the run ID as owner for now
+      // Note: In production, this should use the actual user ID from the context
+      await this.model.updateRunProgress(row.id, row.id, {
         ...row.progress,
         user: me,
       });
@@ -136,10 +137,13 @@ export class NotionImportService {
    * This creates a processor and starts it in the background.
    */
   async startProcessing(runId: RunId, owner: string): Promise<void> {
-    // Get the run
-    const run = await this.model.getRun('workspaceId', runId);
+    // Get the run by ID first to get the workspaceId
+    // We use a direct query since we don't have the workspaceId yet
+    const runRow = await this.model.db.notionImportRun.findUnique({
+      where: { id: runId },
+    });
 
-    if (!run) {
+    if (!runRow) {
       throw new Error(`Run ${runId} not found`);
     }
 

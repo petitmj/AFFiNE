@@ -40,6 +40,14 @@ export const Actions = {
     Payment: {
       Manage: '',
     },
+    NotionImport: {
+      Create: '',
+      Read: '',
+      Pause: '',
+      Resume: '',
+      Cancel: '',
+      Retry: '',
+    }
   },
 
   // Doc Actions
