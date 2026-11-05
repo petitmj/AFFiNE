@@ -2,8 +2,15 @@ import test from 'ava';
 
 import {
   BAY_GEOMETRY,
+  MAX_BOOK_HEIGHT,
   MAX_SPINE_WIDTH,
+  MIN_BOOK_HEIGHT,
+  MIN_SPINE_WIDTH,
+  PLANK_HEIGHT,
+  BAY_BOTTOM,
   NOTE_SLOTS,
+  SCENE_HEIGHT,
+  SCENE_WIDTH,
   packRows,
   paginateBooks,
 } from '../domain/geometry';
@@ -41,8 +48,8 @@ test('bookLook is deterministic and within bounds', t => {
   for (let i = 0; i < 500; i++) {
     const l = bookLook(`doc-${i}`);
     t.true(l.color >= 0 && l.color <= 4);
-    t.true(l.width >= 10 && l.width <= 16);
-    t.true(l.height >= 54 && l.height <= 70);
+    t.true(l.width >= MIN_SPINE_WIDTH && l.width <= MAX_SPINE_WIDTH);
+    t.true(l.height >= MIN_BOOK_HEIGHT && l.height <= MAX_BOOK_HEIGHT);
   }
 });
 
@@ -86,6 +93,35 @@ test('every live doc appears on the shelf (no doc is lost to a bay cap)', t => {
     [UNFILED_BAY_ID]: 99,
   }).bays[0];
   t.is(last.page, last.pageCount - 1);
+});
+
+test('the tallest book clears the ceiling and every plank above its row', t => {
+  BAY_GEOMETRY.forEach(g => {
+    g.rows.forEach((row, i) => {
+      const roof = i === 0 ? g.ceiling : g.rows[i - 1] + PLANK_HEIGHT;
+      t.true(row - roof >= MAX_BOOK_HEIGHT);
+    });
+  });
+});
+
+test('bays and note slots sit inside the scene and do not overlap', t => {
+  for (const g of BAY_GEOMETRY) {
+    t.true(g.x >= 0 && g.x + g.w <= SCENE_WIDTH);
+    t.true(g.rows.every(r => r + PLANK_HEIGHT <= BAY_BOTTOM));
+  }
+  const sorted = [...BAY_GEOMETRY].sort((a, b) => a.x - b.x);
+  sorted.slice(1).forEach((g, i) => t.true(sorted[i].x + sorted[i].w < g.x));
+  NOTE_SLOTS.forEach((n, i) => {
+    t.true(n.x + n.w <= SCENE_WIDTH && n.y + n.h <= SCENE_HEIGHT);
+    NOTE_SLOTS.slice(i + 1).forEach(m =>
+      t.true(
+        n.x + n.w <= m.x ||
+          m.x + m.w <= n.x ||
+          n.y + n.h <= m.y ||
+          m.y + m.h <= n.y
+      )
+    );
+  });
 });
 
 test('every page of books fits its bay, even with the widest spines', t => {

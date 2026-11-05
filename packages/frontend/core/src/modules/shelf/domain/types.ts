@@ -61,7 +61,7 @@ export interface BookLook {
   readonly color: number;
   /** spine width in scene units */
   readonly width: number;
-  /** spine height in scene units, never above 70 so it clears every plank */
+  /** spine height in scene units, never above MAX_BOOK_HEIGHT so it clears every plank */
   readonly height: number;
   /** whether the spine carries a gold band */
   readonly band: boolean;

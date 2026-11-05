@@ -26,9 +26,13 @@ export type {
 export { UNFILED_BAY_ID } from './domain/types';
 export { ShelfService, type ShelfViewMode } from './services/shelf';
 export {
+  BAY_BOTTOM,
   BAY_GEOMETRY,
+  BAY_TOPS,
+  MAX_BOOK_HEIGHT,
   NOTE_SLOTS,
   packRows,
+  PLANK_HEIGHT,
   SCENE_HEIGHT,
   SCENE_WIDTH,
 } from './domain/geometry';

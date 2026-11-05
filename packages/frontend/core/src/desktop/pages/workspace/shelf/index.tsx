@@ -3,6 +3,7 @@ import { FeatureFlagService } from '@affine/core/modules/feature-flag';
 import {
   HERITAGE_CREDIT,
   PALETTES,
+  SCENE_HEIGHT,
   type ShelfPaletteId,
   ShelfService,
   type ShelfViewMode,
@@ -192,7 +193,7 @@ export const Component = () => {
     model.pageCount > 1 ? (
       <div
         className={styles.pager}
-        style={{ right: '3%', top: `${(612 / 640) * 100}%` }}
+        style={{ right: '3%', top: `${(729 / SCENE_HEIGHT) * 100}%` }}
       >
         <button
           type="button"
@@ -274,15 +275,18 @@ export const Component = () => {
               <h1 className={styles.headline}>
                 {t['com.affine.shelf.title']()}
               </h1>
-              <p className={styles.subtitle}>
-                {t['com.affine.shelf.subtitle']()}
+              <p
+                className={clsx(styles.subtitle, empty && styles.subtitleEmpty)}
+              >
+                {empty
+                  ? t['com.affine.shelf.empty']()
+                  : t['com.affine.shelf.subtitle']()}
               </p>
-              {empty ? (
-                <p className={styles.emptyNote}>
-                  {t['com.affine.shelf.empty']()}
-                </p>
-              ) : null}
-              <p className={styles.counter} aria-live="polite">
+              <p
+                className={styles.counter}
+                aria-live="polite"
+                title={counterText}
+              >
                 {counterText}
               </p>
               {shelfPager}

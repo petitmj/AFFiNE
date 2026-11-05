@@ -1,3 +1,9 @@
+import {
+  MAX_BOOK_HEIGHT,
+  MAX_SPINE_WIDTH,
+  MIN_BOOK_HEIGHT,
+  MIN_SPINE_WIDTH,
+} from './geometry';
 import type { BookLook } from './types';
 
 /** FNV-1a, 32 bit. Stable across devices so a doc keeps its look. */
@@ -14,8 +20,10 @@ export function bookLook(docId: string): BookLook {
   const h = fnv1a(docId);
   return {
     color: h % 5,
-    width: 10 + ((h >>> 3) % 7), // 10..16
-    height: 54 + ((h >>> 7) % 17), // 54..70 (fits the shortest shelf gap)
+    width:
+      MIN_SPINE_WIDTH + ((h >>> 3) % (MAX_SPINE_WIDTH - MIN_SPINE_WIDTH + 1)),
+    height:
+      MIN_BOOK_HEIGHT + ((h >>> 7) % (MAX_BOOK_HEIGHT - MIN_BOOK_HEIGHT + 1)),
     band: ((h >>> 11) & 1) === 1,
   };
 }

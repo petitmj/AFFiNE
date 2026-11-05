@@ -1,3 +1,4 @@
+import { SCENE_HEIGHT, SCENE_WIDTH } from '@affine/core/modules/shelf';
 import { createVar, globalStyle, style } from '@vanilla-extract/css';
 
 /** palette tokens; values are assigned inline from the active ShelfPalette */
@@ -13,8 +14,10 @@ export const vars = {
   paper: createVar(),
 };
 
-/** one scene unit = 1/1200 of the stage width */
-const u = (n: number) => `calc(${n} * 100cqw / 1200)`;
+/** one scene unit = 1/1376 of the stage width */
+const u = (n: number) => `calc(${n} * 100cqw / ${SCENE_WIDTH})`;
+const px = (x: number) => `${(x / SCENE_WIDTH) * 100}%`;
+const py = (y: number) => `${(y / SCENE_HEIGHT) * 100}%`;
 
 export const root = style({
   containerType: 'inline-size',
@@ -29,7 +32,7 @@ export const root = style({
 export const stage = style({
   position: 'relative',
   width: '100%',
-  aspectRatio: '1200 / 640',
+  aspectRatio: `${SCENE_WIDTH} / ${SCENE_HEIGHT}`,
   overflow: 'hidden',
 });
 
@@ -57,12 +60,28 @@ export const book = style({
     },
   },
 });
+const mark = `color-mix(in srgb, ${vars.ink} 55%, transparent)`;
+/** spines alternate between two engraved looks so a shelf reads as varied */
+export const bookBand = style({
+  backgroundImage: [0, 1]
+    .map(() => `linear-gradient(${mark}, ${mark})`)
+    .join(', '),
+  backgroundRepeat: 'no-repeat',
+  backgroundSize: '100% 5%, 100% 5%',
+  backgroundPosition: '0 16%, 0 84%',
+});
+export const bookMarked = style({
+  backgroundImage: [0, 1, 2]
+    .map(() => `linear-gradient(${mark}, ${mark})`)
+    .join(', '),
+  backgroundRepeat: 'no-repeat',
+  backgroundSize: '56% 4%, 40% 4%, 56% 4%',
+  backgroundPosition: '50% 38%, 50% 50%, 50% 62%',
+});
 export const bookFavorite = style({
   boxShadow: `inset 0 ${u(5)} 0 ${vars.gold}`,
 });
 export const bookUnopened = style({ filter: 'saturate(0.85)' });
-
-const line = `color-mix(in srgb, ${vars.ink} 60%, transparent)`;
 
 export const note = style({
   position: 'absolute',
@@ -70,12 +89,6 @@ export const note = style({
   padding: 0,
   border: `1px solid ${vars.ink}`,
   cursor: 'pointer',
-  backgroundImage: [0, 1, 2]
-    .map(() => `linear-gradient(${line}, ${line})`)
-    .join(', '),
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: '74% 6%, 62% 6%, 68% 6%',
-  backgroundPosition: '50% 46%, 50% 64%, 50% 82%',
   selectors: { '&:focus-visible': { ...focusRing, zIndex: 3 } },
   '@media': {
     '(prefers-reduced-motion: no-preference)': {
@@ -84,19 +97,25 @@ export const note = style({
     },
   },
 });
+export const noteArt = style({
+  display: 'block',
+  width: '100%',
+  height: '100%',
+  pointerEvents: 'none',
+});
 
 export const pinLabel = style({
   position: 'absolute',
-  left: `${(186 / 1200) * 100}%`,
-  top: `${(214 / 640) * 100}%`,
-  width: `${(180 / 1200) * 100}%`,
-  height: `${(22 / 640) * 100}%`,
+  left: px(219),
+  top: py(264),
+  width: px(209),
+  height: py(26),
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: `max(10px, ${u(11)})`,
-  fontWeight: 700,
-  letterSpacing: '0.1em',
+  fontSize: `max(10px, ${u(12.5)})`,
+  fontWeight: 500,
+  letterSpacing: '0.12em',
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
@@ -135,6 +154,9 @@ export const pager = style({
   gap: '2px',
   alignItems: 'center',
   color: vars.counter,
+  background: vars.floor,
+  borderRadius: '999px',
+  padding: '1px 4px',
   fontSize: '11px',
   fontWeight: 700,
 });
@@ -154,15 +176,15 @@ export const pagerButton = style({
 });
 
 export const pill = style({
-  height: '44px',
-  padding: '0 22px',
+  height: `max(44px, ${u(51)})`,
+  padding: `0 max(18px, ${u(24)})`,
   borderRadius: '999px',
   border: `1.5px solid ${vars.ink}`,
   background: vars.paper,
   color: vars.ink,
   fontFamily: 'inherit',
-  fontSize: '13px',
-  fontWeight: 700,
+  fontSize: `max(12px, ${u(14.5)})`,
+  fontWeight: 500,
   letterSpacing: '0.14em',
   textTransform: 'uppercase',
   cursor: 'pointer',
@@ -172,24 +194,30 @@ export const pillDark = style({ background: vars.ink, color: vars.paper });
 export const pillAccent = style({
   background: vars.accent,
   color: vars.accentText,
+  border: `1.5px solid color-mix(in srgb, ${vars.ink} 40%, ${vars.accent})`,
   letterSpacing: 'normal',
   textTransform: 'none',
-  padding: '0 18px',
+  fontWeight: 400,
+  fontSize: `max(13px, ${u(17)})`,
+  lineHeight: 1.15,
+  textAlign: 'center',
+  whiteSpace: 'normal',
+  padding: '0 12px',
 });
 
 export const topRight = style({
   position: 'absolute',
-  right: '28px',
-  top: '28px',
+  right: u(31),
+  top: u(79),
   display: 'flex',
-  gap: '12px',
+  gap: u(14),
   zIndex: 5,
 });
 
 export const popover = style({
   position: 'absolute',
-  right: '28px',
-  top: '84px',
+  right: u(31),
+  top: `calc(${u(79 + 51)} + 8px)`,
   width: 'min(340px, calc(100% - 56px))',
   padding: '16px',
   borderRadius: '12px',
@@ -228,42 +256,49 @@ export const credit = style({ fontSize: '12px', opacity: 0.8 });
 
 export const headline = style({
   position: 'absolute',
-  left: u(56),
-  top: u(424),
+  left: u(66),
+  top: u(506),
   margin: 0,
   fontFamily: "'Playfair Display', Georgia, serif",
   fontWeight: 500,
-  fontSize: `max(26px, ${u(44)})`,
+  fontSize: `max(26px, ${u(52)})`,
   lineHeight: 1.1,
   color: vars.headline,
 });
 export const subtitle = style({
   position: 'absolute',
-  left: u(56),
-  top: u(486),
-  width: u(380),
+  left: u(66),
+  top: u(588),
+  width: u(440),
   margin: 0,
-  fontSize: `max(13px, ${u(15)})`,
+  fontSize: `max(13px, ${u(17)})`,
   lineHeight: 1.45,
 });
+export const subtitleEmpty = style({ fontWeight: 700 });
 export const counter = style({
   position: 'absolute',
-  left: u(56),
-  top: u(610),
+  left: u(66),
+  top: py(725),
+  height: py(43),
+  width: u(263),
   margin: 0,
-  fontSize: `max(11px, ${u(12)})`,
-  fontWeight: 700,
-  letterSpacing: '0.16em',
+  display: 'flex',
+  alignItems: 'center',
+  fontSize: `max(11px, ${u(13.5)})`,
+  fontWeight: 500,
+  letterSpacing: '0.08em',
   textTransform: 'uppercase',
   color: vars.counter,
   whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 });
 export const eagleHit = style({
   position: 'absolute',
-  left: `${(520 / 1200) * 100}%`,
-  top: `${(370 / 640) * 100}%`,
-  width: `${(96 / 1200) * 100}%`,
-  height: `${(236 / 640) * 100}%`,
+  left: px(590),
+  top: py(436),
+  width: px(140),
+  height: py(286),
   background: 'transparent',
   border: 0,
   cursor: 'pointer',
@@ -272,17 +307,10 @@ export const eagleHit = style({
 });
 export const eagleButton = style({
   position: 'absolute',
-  left: `${(598 / 1200) * 100}%`,
-  top: `${(370 / 640) * 100}%`,
-});
-export const emptyNote = style({
-  position: 'absolute',
-  left: u(56),
-  top: u(330),
-  width: u(560),
-  margin: 0,
-  fontSize: `max(13px, ${u(15)})`,
-  fontWeight: 700,
+  left: px(693),
+  top: py(451),
+  width: px(137),
+  height: py(53),
 });
 
 // list view
