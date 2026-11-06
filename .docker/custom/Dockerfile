@@ -47,9 +47,20 @@ RUN yarn affine @affine/server-native build && \
   esac && \
   mv packages/backend/native/server-native.node "packages/backend/native/server-native.${ARCH}.node"
 
-RUN yarn affine @affine/web build
-RUN yarn affine @affine/admin build
-RUN yarn affine @affine/mobile build
+# Frontends. Each build is followed by a check so a silent failure stops the
+# build here, with a clear message, instead of surfacing later as a missing
+# COPY source. The outputs are then moved to /out, away from the workspace, so
+# that nothing done to the workspace afterwards (the production-only install
+# below) can touch them.
+RUN yarn affine @affine/web build && \
+  test -f packages/frontend/apps/web/dist/index.html && \
+  mkdir -p /out && cp -r packages/frontend/apps/web/dist /out/web
+RUN yarn affine @affine/admin build && \
+  test -f packages/frontend/admin/dist/index.html && \
+  cp -r packages/frontend/admin/dist /out/admin
+RUN yarn affine @affine/mobile build && \
+  test -f packages/frontend/apps/mobile/dist/index.html && \
+  cp -r packages/frontend/apps/mobile/dist /out/mobile
 RUN yarn workspace @affine/server build
 
 # Production dependencies only, and the generated Prisma client.
@@ -63,9 +74,9 @@ ARG TARGETARCH
 WORKDIR /app
 
 COPY --from=builder /repo/packages/backend/server /app
-COPY --from=builder /repo/packages/frontend/apps/web/dist /app/static
-COPY --from=builder /repo/packages/frontend/admin/dist /app/static/admin
-COPY --from=builder /repo/packages/frontend/apps/mobile/dist /app/static/mobile
+COPY --from=builder /out/web /app/static
+COPY --from=builder /out/admin /app/static/admin
+COPY --from=builder /out/mobile /app/static/mobile
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends openssl ca-certificates && \
