@@ -262,7 +262,11 @@ const NotificationItemSkeleton = () => {
   ));
 };
 
-const NotificationItem = ({ notification }: { notification: Notification }) => {
+export const NotificationItem = ({
+  notification,
+}: {
+  notification: Notification;
+}) => {
   const t = useI18n();
   const type = notification.type;
 

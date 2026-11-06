@@ -8333,6 +8333,35 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.shelf.empty"](): string;
     /**
+      * `Notifications`
+      */
+    ["com.affine.shelf.notifications"](): string;
+    /**
+      * `Unread notification {{index}} of {{count}}`
+      */
+    ["com.affine.shelf.flower.aria"](options: {
+        readonly index: string;
+        readonly count: string;
+    }): string;
+    /**
+      * `+{{count}} more`
+      */
+    ["com.affine.shelf.flower.more"](options: {
+        readonly count: string;
+    }): string;
+    /**
+      * `Notification`
+      */
+    ["com.affine.shelf.flower.card"](): string;
+    /**
+      * `Mark as read`
+      */
+    ["com.affine.shelf.flower.mark-read"](): string;
+    /**
+      * `Close`
+      */
+    ["com.affine.shelf.flower.close"](): string;
+    /**
       * `Notion (live import from the API)`
       */
     ["com.affine.import.notion-api"](): string;

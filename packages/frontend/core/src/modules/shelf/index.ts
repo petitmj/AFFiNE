@@ -26,6 +26,14 @@ export type {
 export { UNFILED_BAY_ID } from './domain/types';
 export { ShelfService, type ShelfViewMode } from './services/shelf';
 export {
+  assignSlots,
+  FLOWER_SIZE,
+  FLOWER_SLOTS,
+  type FlowerHue,
+  type FlowerLook,
+  flowerLook,
+} from './domain/flowers';
+export {
   BAY_BOTTOM,
   BAY_GEOMETRY,
   BAY_TOPS,

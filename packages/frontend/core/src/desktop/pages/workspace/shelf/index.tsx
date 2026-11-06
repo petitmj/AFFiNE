@@ -22,6 +22,7 @@ import { assignInlineVars } from '@vanilla-extract/dynamic';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { PinNotes, SceneBay } from './books';
+import { NotificationsList, PlantFlowers } from './flowers';
 import * as styles from './index.css';
 import { ShelfScene } from './scene';
 
@@ -239,6 +240,7 @@ export const Component = () => {
                 palette={palette}
                 openDoc={openDoc}
               />
+              <PlantFlowers palette={palette} />
               {model.bays.map((bay, i) => (
                 <SceneBay
                   key={bay.id}
@@ -324,6 +326,7 @@ export const Component = () => {
                 ) : null}
               </div>
               {empty ? <p>{t['com.affine.shelf.empty']()}</p> : null}
+              <NotificationsList />
               {model.pinBoard.notes.length ? (
                 <section
                   className={styles.listSection}

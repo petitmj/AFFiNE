@@ -1,5 +1,11 @@
-import { SCENE_HEIGHT, SCENE_WIDTH } from '@affine/core/modules/shelf';
-import { createVar, globalStyle, style } from '@vanilla-extract/css';
+import {
+  FLOWER_SIZE,
+  SCENE_HEIGHT,
+  SCENE_WIDTH,
+} from '@affine/core/modules/shelf';
+import { cssVar } from '@toeverything/theme';
+import { cssVarV2 } from '@toeverything/theme/v2';
+import { createVar, globalStyle, keyframes, style } from '@vanilla-extract/css';
 
 /** palette tokens; values are assigned inline from the active ShelfPalette */
 export const vars = {
@@ -378,3 +384,85 @@ export const listBar = style({
 });
 
 globalStyle(`${root} *`, { boxSizing: 'border-box' });
+
+/* notification flowers on the plant */
+const flowerBloom = keyframes({
+  from: { transform: 'translate(-50%, -50%) scale(0.2)' },
+  to: { transform: 'translate(-50%, -50%) scale(1)' },
+});
+export const flowers = style({
+  position: 'absolute',
+  inset: 0,
+  pointerEvents: 'none',
+  zIndex: 4,
+});
+export const flower = style({
+  position: 'absolute',
+  width: `max(24px, ${u(FLOWER_SIZE)})`,
+  height: `max(24px, ${u(FLOWER_SIZE)})`,
+  padding: 0,
+  border: 0,
+  borderRadius: '50%',
+  background: 'transparent',
+  cursor: 'pointer',
+  pointerEvents: 'auto',
+  transform: 'translate(-50%, -50%)',
+  selectors: {
+    '&:focus-visible': focusRing,
+    '&[aria-expanded="true"]': { outline: `2px solid ${vars.ink}` },
+  },
+  '@media': {
+    '(prefers-reduced-motion: no-preference)': {
+      animation: `${flowerBloom} 420ms ease-out`,
+      transition: 'filter 120ms ease-out',
+      selectors: { '&:hover': { filter: 'brightness(1.08)' } },
+    },
+  },
+});
+export const flowerArt = style({
+  display: 'block',
+  width: '100%',
+  height: '100%',
+  overflow: 'visible',
+});
+export const flowerMore = style({
+  position: 'absolute',
+  pointerEvents: 'none',
+  transform: 'translate(-50%, 0)',
+  padding: '1px 8px',
+  borderRadius: '999px',
+  border: `1.5px solid ${vars.ink}`,
+  background: vars.paper,
+  color: vars.ink,
+  fontSize: `max(10px, ${u(11)})`,
+  fontWeight: 700,
+  whiteSpace: 'nowrap',
+});
+export const flowerCard = style({
+  position: 'absolute',
+  zIndex: 7,
+  width: 'min(380px, calc(100% - 24px))',
+  boxSizing: 'border-box',
+  padding: '8px',
+  borderRadius: '12px',
+  border: `1.5px solid ${vars.ink}`,
+  background: cssVarV2('layer/background/overlayPanel'),
+  boxShadow: cssVar('overlayShadow'),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+  selectors: { '&:focus-visible': focusRing },
+});
+export const flowerCardActions = style({
+  display: 'flex',
+  gap: '8px',
+  justifyContent: 'flex-end',
+});
+export const listNotifications = style({
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+});

@@ -14,6 +14,13 @@ import {
   packRows,
   paginateBooks,
 } from '../domain/geometry';
+import {
+  assignSlots,
+  FLOWER_SIZE,
+  FLOWER_SLOTS,
+  flowerHue,
+  flowerLook,
+} from '../domain/flowers';
 import { bookLook, fnv1a } from '../domain/hash';
 import { layoutShelf } from '../domain/layout';
 import {
@@ -287,4 +294,83 @@ test('palettes: text on the surfaces it sits on meets WCAG AA (4.5:1)', t => {
     }
   }
   t.deepEqual(failures, []);
+});
+
+test('flowers: slots are inside the scene, apart, and clear of the pin board', t => {
+  for (const [i, a] of FLOWER_SLOTS.entries()) {
+    t.true(a.x > FLOWER_SIZE && a.x < SCENE_WIDTH - FLOWER_SIZE);
+    t.true(a.y > FLOWER_SIZE && a.y < SCENE_HEIGHT - FLOWER_SIZE);
+    // pin board label: x 219..428 from y=264; the board itself: x 171..473 from y=289
+    const r = FLOWER_SIZE / 2;
+    const overLabel = a.y + r > 264 && a.x + r > 219 && a.x - r < 428;
+    const overBoard = a.y + r > 289 && a.x + r > 171 && a.x - r < 473;
+    t.false(overLabel);
+    t.false(overBoard);
+    for (const b of FLOWER_SLOTS.slice(i + 1)) {
+      t.true(Math.hypot(a.x - b.x, a.y - b.y) >= 24);
+    }
+  }
+});
+
+test('flowers: every notification gets its own slot, up to the capacity', t => {
+  const ids = Array.from({ length: 30 }, (_, i) => `n-${i}`);
+  const slots = assignSlots(ids, new Map());
+  t.is(slots.size, FLOWER_SLOTS.length);
+  t.is(new Set(slots.values()).size, FLOWER_SLOTS.length);
+  // newest first: the first ids are the ones that bloom
+  t.true(ids.slice(0, FLOWER_SLOTS.length).every(id => slots.has(id)));
+  t.false(slots.has('n-29'));
+});
+
+test('flowers: reading one leaves the others where they were', t => {
+  const ids = ['a', 'b', 'c', 'd', 'e'];
+  const before = assignSlots(ids, new Map());
+  const after = assignSlots(['a', 'c', 'd', 'e'], before);
+  for (const id of ['a', 'c', 'd', 'e']) t.is(after.get(id), before.get(id));
+  t.false(after.has('b'));
+});
+
+test('flowers: a waiting notification takes the slot that frees up', t => {
+  const ids = Array.from(
+    { length: FLOWER_SLOTS.length + 1 },
+    (_, i) => `n-${i}`
+  );
+  const first = assignSlots(ids, new Map());
+  const waiting = ids[ids.length - 1];
+  t.false(first.has(waiting));
+  const freed = first.get('n-3');
+  const next = assignSlots(
+    ids.filter(id => id !== 'n-3'),
+    first
+  );
+  t.is(next.get(waiting), freed);
+  for (const id of ids.filter(id => id !== 'n-3' && id !== waiting)) {
+    t.is(next.get(id), first.get(id));
+  }
+});
+
+test('flowers: new notifications avoid occupied slots and duplicates are ignored', t => {
+  const prev = new Map([['a', 4]]);
+  const slots = assignSlots(['a', 'a', 'b'], prev);
+  t.is(slots.get('a'), 4);
+  t.is(slots.size, 2);
+  t.not(slots.get('b'), 4);
+  // a stale slot beyond the capacity is not trusted
+  t.true(
+    (assignSlots(['z'], new Map([['z', 99]])).get('z') ?? 99) <
+      FLOWER_SLOTS.length
+  );
+});
+
+test('flowers: colour follows the kind of notification, and a look is stable', t => {
+  t.is(flowerHue('Mention'), 'terra');
+  t.is(flowerHue('CommentMention'), 'terra');
+  t.is(flowerHue('Comment'), 'terra');
+  t.is(flowerHue('InvitationReviewRequest'), 'gold');
+  t.is(flowerHue('Something'), 'cream');
+  t.deepEqual(flowerLook('id-1', 'Mention'), flowerLook('id-1', 'Mention'));
+  const turns = new Set(
+    Array.from({ length: 20 }, (_, i) => flowerLook(`id-${i}`, 'x').turn)
+  );
+  t.true(turns.size > 5);
 });
