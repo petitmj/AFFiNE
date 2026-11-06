@@ -61,12 +61,22 @@ RUN yarn affine @affine/admin build && \
 RUN yarn affine @affine/mobile build && \
   test -f packages/frontend/apps/mobile/dist/index.html && \
   cp -r packages/frontend/apps/mobile/dist /out/mobile
-RUN yarn workspace @affine/server build
+# Server bundle. Checked and stashed like the frontends: the start command runs
+# ./dist/main.js, so an image without it can only crash-loop.
+RUN yarn workspace @affine/server build && \
+  test -f packages/backend/server/dist/main.js && \
+  ls -l packages/backend/server/dist | head -20 && \
+  cp -r packages/backend/server/dist /out/server-dist
 
-# Production dependencies only, and the generated Prisma client.
+# Production dependencies only, and the generated Prisma client. Re-installing
+# can run workspace lifecycle scripts, so the server bundle is put back from
+# the stash afterwards and checked again.
 RUN yarn workspaces focus @affine/server --production && \
   yarn workspace @affine/server prisma generate && \
-  mv node_modules packages/backend/server/node_modules
+  mv node_modules packages/backend/server/node_modules && \
+  rm -rf packages/backend/server/dist && \
+  cp -r /out/server-dist packages/backend/server/dist && \
+  test -f packages/backend/server/dist/main.js
 
 # ----------------------------------------------------------------- assets ---
 FROM node:22-bookworm-slim AS assets
@@ -82,7 +92,8 @@ RUN apt-get update && \
   apt-get install -y --no-install-recommends openssl ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
-RUN AFFINE_DOCKER_CLEAN=1 TARGETARCH="${TARGETARCH}" node ./scripts/docker-clean.mjs
+RUN AFFINE_DOCKER_CLEAN=1 TARGETARCH="${TARGETARCH}" node ./scripts/docker-clean.mjs && \
+  test -f /app/dist/main.js && test -f /app/static/index.html
 
 # ---------------------------------------------------------------- runtime ---
 FROM node:22-bookworm-slim
