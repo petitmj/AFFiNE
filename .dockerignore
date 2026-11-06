@@ -24,3 +24,7 @@
 # Sourcemaps (keep server sourcemap for backend stacktraces)
 **/*.map
 !packages/backend/server/dist/main.js.map
+
+# Docker runtime data
+/.docker/**/data
+/.docker/**/config
