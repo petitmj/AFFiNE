@@ -260,7 +260,7 @@ export const headline = style({
   top: u(506),
   margin: 0,
   fontFamily: "'Playfair Display', Georgia, serif",
-  fontWeight: 500,
+  fontWeight: 700,
   fontSize: `max(26px, ${u(52)})`,
   lineHeight: 1.1,
   color: vars.headline,
