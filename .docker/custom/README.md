@@ -80,3 +80,12 @@ server behind a domain, also set `server.externalUrl` there.
   `yarn affine @affine/native build`, then `yarn dev -p @affine/web`
   (see [docs/BUILDING.md](../../docs/BUILDING.md)). Notion import and
   notifications need the server, so use Docker for those.
+
+### The migration or server stops with "AFFINE_PRO_PUBLIC_KEY must be embedded"
+
+The self-hosted server needs a licence public key compiled into its native
+module. Official images use AFFiNE's release key, which is a CI secret. This
+Dockerfile embeds the public test key from `.github/workflows/build-test.yml`
+instead, so the server starts, but AFFiNE Pro licences will not validate. Update
+to the latest branch and rebuild (the native module is rebuilt, which takes a
+while). To embed a different key, pass `--build-arg AFFINE_PRO_PUBLIC_KEY=...`.
