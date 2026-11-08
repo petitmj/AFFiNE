@@ -10,6 +10,13 @@ import type { ViewIconName } from '../constants';
 import { ViewScope } from '../scopes/view';
 import { SidebarTab } from './sidebar-tab';
 
+/**
+ * Where a new view opens. This is the Shelf home page; "All docs" stays one
+ * click away in the sidebar. Kept in one place so the two history set-ups
+ * below cannot disagree.
+ */
+export const DEFAULT_VIEW_PATHNAME = '/shelf';
+
 export class View extends Entity<{
   id: string;
   defaultLocation?: To | undefined;
@@ -54,13 +61,15 @@ export class View extends Entity<{
   constructor() {
     super();
     this.history = createNavigableHistory({
-      initialEntries: [this.props.defaultLocation ?? { pathname: '/all' }],
+      initialEntries: [
+        this.props.defaultLocation ?? { pathname: DEFAULT_VIEW_PATHNAME },
+      ],
       initialIndex: 0,
     });
   }
 
   history = createNavigableHistory({
-    initialEntries: ['/all'],
+    initialEntries: [DEFAULT_VIEW_PATHNAME],
     initialIndex: 0,
   });
 

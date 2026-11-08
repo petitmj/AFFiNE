@@ -12,6 +12,8 @@ samples.
 
 ![The Shelf home](images/shelf/shelf-home.png)
 
+The Shelf is the page a workspace opens on. **Shelf** also stays in the sidebar,
+and **All docs** is one click away there (and from the link on the Shelf page).
 The Shelf is a second way to see your workspace. The picture is decoration; the
 things you can use are real buttons, so keyboard and screen-reader use works.
 
