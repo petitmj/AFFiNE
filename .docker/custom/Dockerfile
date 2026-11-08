@@ -39,13 +39,33 @@ RUN --mount=type=cache,target=/root/.yarn/berry/cache \
 
 # Native module for the server. The server bundle looks for an architecture
 # named file (see packages/backend/native/index.js), as the official build does.
-RUN yarn affine @affine/server-native build && \
+#
+# The self-hosted server refuses to start unless a licence public key was
+# compiled into the native module (crypto.ts: "AFFINE_PRO_PUBLIC_KEY must be
+# embedded"). Official images embed AFFiNE's release key, a CI secret. This
+# image embeds the public test key that the repository itself publishes in
+# .github/workflows/build-test.yml. It only verifies signatures, so the server
+# starts, but licences signed by AFFiNE's release key will not validate. Pass
+# --build-arg AFFINE_PRO_PUBLIC_KEY=... to embed a different key. The build
+# fails here if the compiled module does not expose a key.
+ARG AFFINE_PRO_PUBLIC_KEY=""
+RUN KEY="${AFFINE_PRO_PUBLIC_KEY}"; \
+  if [ -z "$KEY" ]; then \
+    KEY="$(printf '%s\n' \
+      '-----BEGIN PUBLIC KEY-----' \
+      'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEObwJiTmbui7rkWfPJ7Lozvuy2Rcl' \
+      'otcrb0V6dlS2ijKEShm7ZttTwQn08xzesdjX/AxpoR5X9yfoHkauIBuuMQ==' \
+      '-----END PUBLIC KEY-----')"; \
+  fi; \
+  export AFFINE_PRO_PUBLIC_KEY="$KEY" && \
+  yarn affine @affine/server-native build && \
   case "${TARGETARCH:-$(dpkg --print-architecture)}" in \
     amd64) ARCH=x64 ;; \
     arm64) ARCH=arm64 ;; \
     *) echo "unsupported architecture" && exit 1 ;; \
   esac && \
-  mv packages/backend/native/server-native.node "packages/backend/native/server-native.${ARCH}.node"
+  mv packages/backend/native/server-native.node "packages/backend/native/server-native.${ARCH}.node" && \
+  node -e "const m=require('./packages/backend/native/server-native.${ARCH}.node'); if(!m.AFFINE_PRO_PUBLIC_KEY){console.error('licence public key missing from native module');process.exit(1)}"
 
 # Frontends. Each build is followed by a check so a silent failure stops the
 # build here, with a clear message, instead of surfacing later as a missing
