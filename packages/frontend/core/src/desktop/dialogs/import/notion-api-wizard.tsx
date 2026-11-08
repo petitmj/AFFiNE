@@ -5,11 +5,13 @@ import {
   NotionImportService,
   type RunState,
 } from '@affine/core/modules/notion-import';
-import { parseRoots } from '@affine/core/modules/notion-import/domain/roots';
+import { overallProgress } from '@affine/core/modules/notion-import/services/progress';
 import {
-  isRunning,
-  overallProgress,
-} from '@affine/core/modules/notion-import/services/progress';
+  connectForm,
+  outcomeRows,
+  type Scope,
+  wizardStep,
+} from '@affine/core/modules/notion-import/services/wizard-model';
 import { WorkspaceService } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
@@ -17,8 +19,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import * as style from './styles.css';
 import * as css from './notion-api-wizard.css';
-
-type Scope = 'all' | 'some';
 
 function downloadText(fileName: string, text: string) {
   const url = URL.createObjectURL(
@@ -45,12 +45,16 @@ export function NotionApiWizard({
 
   useEffect(() => () => service.leave(), [service]);
 
-  if (isRunning(state)) return <RunningStep state={state} />;
-  if (state.phase === 'done') {
-    return <DoneStep state={state} onFinish={onFinish} />;
+  switch (wizardStep(state)) {
+    case 'running':
+      return <RunningStep state={state} />;
+    case 'done':
+      return <DoneStep state={state} onFinish={onFinish} />;
+    case 'failed':
+      return <FailedStep state={state} />;
+    default:
+      return <ConnectStep state={state} onBack={onBack} />;
   }
-  if (state.phase === 'failed') return <FailedStep state={state} />;
-  return <ConnectStep state={state} onBack={onBack} />;
 }
 
 function ConnectStep({
@@ -80,23 +84,22 @@ function ConnectStep({
     };
   }, [service]);
 
-  const parsed = parseRoots(rootsText);
   const needsRoots = scope === 'some';
-  const rootsOk =
-    !needsRoots || (parsed.ids.length > 0 && parsed.invalid.length === 0);
-  const canStart = service.available && token.trim().length > 0 && rootsOk;
+  const form = connectForm({
+    token,
+    scope,
+    rootsText,
+    includeBlockComments: comments,
+    available: service.available,
+  });
+  const request = form.request;
 
   const start = useCallback(() => {
-    service
-      .start({
-        token: token.trim(),
-        roots: needsRoots ? parsed.ids : [],
-        includeBlockComments: comments,
-      })
-      .catch(() => undefined);
+    if (!request) return;
+    service.start(request).catch(() => undefined);
     // the token has been handed to the server; do not keep it in memory here
     setToken('');
-  }, [service, token, needsRoots, parsed.ids, comments]);
+  }, [service, request]);
 
   return (
     <div className={css.wizard}>
@@ -176,10 +179,10 @@ function ConnectStep({
               ]()}
               onChange={e => setRootsText(e.target.value)}
             />
-            {parsed.invalid.length ? (
+            {form.invalid.length ? (
               <span className={css.errorText} role="alert">
                 {t['com.affine.import.notion-api.scope.invalid']({
-                  lines: parsed.invalid.join(', '),
+                  lines: form.invalid.join(', '),
                 })}
               </span>
             ) : null}
@@ -211,7 +214,7 @@ function ConnectStep({
         <Button variant="secondary" onClick={onBack}>
           {t['com.affine.import.notion-api.back']()}
         </Button>
-        <Button variant="primary" disabled={!canStart} onClick={start}>
+        <Button variant="primary" disabled={!request} onClick={start}>
           {t['com.affine.import.notion-api.start']()}
         </Button>
       </div>
@@ -366,12 +369,7 @@ function DoneStep({
   const { jumpToPage } = useNavigateHelper();
   const s = state.summary;
 
-  const rows = [
-    ['mapped', s?.mapped],
-    ['degraded', s?.degraded],
-    ['preserved', s?.preservedOnly],
-    ['unrecoverable', s?.unrecoverable],
-  ] as const;
+  const rows = outcomeRows(s);
   const label = {
     mapped: t['com.affine.import.notion-api.outcome.mapped'](),
     degraded: t['com.affine.import.notion-api.outcome.degraded'](),
@@ -390,10 +388,10 @@ function DoneStep({
         })}
       </p>
       <ul className={css.outcomes}>
-        {rows.map(([key, count]) => (
+        {rows.map(({ key, count }) => (
           <li key={key} className={css.outcome}>
             <span>{label[key]}</span>
-            <span className={css.outcomeCount}>{count ?? 0}</span>
+            <span className={css.outcomeCount}>{count}</span>
           </li>
         ))}
       </ul>
