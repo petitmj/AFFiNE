@@ -6,7 +6,7 @@ export { WorkbenchService } from './services/workbench';
 export { useBindWorkbenchToBrowserRouter } from './view/browser-adapter';
 export { useIsActiveView } from './view/use-is-active-view';
 export { ViewBody, ViewHeader, ViewSidebarTab } from './view/view-islands';
-export { ViewIcon, ViewTitle } from './view/view-meta';
+export { ViewIcon, ViewImmersive, ViewTitle } from './view/view-meta';
 export type { WorkbenchLinkProps } from './view/workbench-link';
 export { WorkbenchLink } from './view/workbench-link';
 export { WorkbenchRoot } from './view/workbench-root';

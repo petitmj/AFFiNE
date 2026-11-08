@@ -1,9 +1,14 @@
+import { AppSidebarService } from '@affine/core/modules/app-sidebar';
+import { useNewDoc } from '@affine/core/modules/app-sidebar/views/add-page-button';
 import { ServerService } from '@affine/core/modules/cloud';
+import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { FeatureFlagService } from '@affine/core/modules/feature-flag';
+import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/services/cmdk';
 import {
   HERITAGE_CREDIT,
   PALETTES,
   SCENE_HEIGHT,
+  SHELF_NAV,
   type ShelfPaletteId,
   ShelfService,
   type ShelfViewMode,
@@ -12,6 +17,7 @@ import {
 import {
   ViewBody,
   ViewIcon,
+  ViewImmersive,
   ViewTitle,
   WorkbenchService,
 } from '@affine/core/modules/workbench';
@@ -48,14 +54,26 @@ function useElementWidth() {
 
 export const Component = () => {
   const t = useI18n();
-  const { shelfService, workbenchService, featureFlagService, serverService } =
-    useServices({
-      ShelfService,
-      WorkbenchService,
-      FeatureFlagService,
-      ServerService,
-    });
+  const {
+    shelfService,
+    workbenchService,
+    featureFlagService,
+    serverService,
+    appSidebarService,
+    cMDKQuickSearchService,
+    workspaceDialogService,
+  } = useServices({
+    ShelfService,
+    WorkbenchService,
+    FeatureFlagService,
+    ServerService,
+    AppSidebarService,
+    CMDKQuickSearchService,
+    WorkspaceDialogService,
+  });
   const workbench = workbenchService.workbench;
+  const sidebar = appSidebarService.sidebar;
+  const createDoc = useNewDoc();
 
   const model = useLiveData(shelfService.model$);
   const palette = useLiveData(shelfService.palette$);
@@ -71,13 +89,44 @@ export const Component = () => {
 
   const [hintsOpen, setHintsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [eagleNoteOpen, setEagleNoteOpen] = useState(false);
+  // the Shelf is the whole screen: the sidebar stays hidden until asked for,
+  // and comes back by itself when this page goes away
+  const [sidebarShown, setSidebarShown] = useState(false);
+  useEffect(() => {
+    sidebar.setSuppressed(!sidebarShown);
+    return () => sidebar.setSuppressed(false);
+  }, [sidebar, sidebarShown]);
 
   const openDoc = useCallback(
     (docId: string) => workbench.openDoc(docId),
     [workbench]
   );
-  const openChat = useCallback(() => workbench.open('/chat'), [workbench]);
+  const openPath = useCallback(
+    (path: string) => workbench.open(path),
+    [workbench]
+  );
   const openAll = useCallback(() => workbench.open('/all'), [workbench]);
+  const onEagle = useCallback(() => {
+    if (aiAvailable) {
+      workbench.open('/chat');
+    } else {
+      setEagleNoteOpen(v => !v);
+    }
+  }, [aiAvailable, workbench]);
+  const onSearch = useCallback(
+    () => cMDKQuickSearchService.toggle(),
+    [cMDKQuickSearchService]
+  );
+  const onNewDoc = useCallback(() => createDoc(), [createDoc]);
+  const onSettings = useCallback(
+    () => workspaceDialogService.open('setting', { activeTab: 'appearance' }),
+    [workspaceDialogService]
+  );
+  const onToggleSidebar = useCallback(() => {
+    if (!sidebarShown) sidebar.setOpen(true);
+    setSidebarShown(v => !v);
+  }, [sidebar, sidebarShown]);
   const onBayPage = useCallback(
     (bayId: string, page: number) => shelfService.setBayPage(bayId, page),
     [shelfService]
@@ -164,9 +213,44 @@ export const Component = () => {
               ))}
             </div>
           ) : null}
-          <button type="button" className={styles.chip} onClick={openAll}>
-            {t['com.affine.shelf.all-docs']()}
-          </button>
+          <div className={styles.popoverRow}>
+            <button type="button" className={styles.chip} onClick={onSearch}>
+              {t['Quick search']()}
+            </button>
+            <button type="button" className={styles.chip} onClick={onNewDoc}>
+              {t['New Page']()}
+            </button>
+          </div>
+          <nav
+            className={styles.popoverRow}
+            aria-label={t['com.affine.shelf.menu']()}
+          >
+            {SHELF_NAV.map(entry => (
+              <button
+                key={entry.id}
+                type="button"
+                className={styles.chip}
+                onClick={() => openPath(entry.path)}
+              >
+                {t[entry.labelKey]()}
+              </button>
+            ))}
+          </nav>
+          <div className={styles.popoverRow}>
+            <button type="button" className={styles.chip} onClick={onSettings}>
+              {t['com.affine.settingSidebar.title']()}
+            </button>
+            <button
+              type="button"
+              className={styles.chip}
+              aria-pressed={sidebarShown}
+              onClick={onToggleSidebar}
+            >
+              {sidebarShown
+                ? t['com.affine.shelf.menu.hide-sidebar']()
+                : t['com.affine.shelf.menu.show-sidebar']()}
+            </button>
+          </div>
           <div
             role="group"
             aria-label={t['com.affine.shelf.palette']()}
@@ -227,8 +311,13 @@ export const Component = () => {
     <>
       <ViewTitle title={t['com.affine.workspaceSubPath.shelf']()} />
       <ViewIcon icon="allDocs" />
+      <ViewImmersive />
       <ViewBody>
-        <div ref={rootRef} className={styles.root} style={vars}>
+        <div
+          ref={rootRef}
+          className={clsx(styles.root, mode === 'scene' && styles.rootScene)}
+          style={vars}
+        >
           {mode === 'scene' ? (
             <div className={styles.stage}>
               <div className={styles.art}>
@@ -251,28 +340,30 @@ export const Component = () => {
                   onPage={onBayPage}
                 />
               ))}
-              {aiAvailable ? (
-                <>
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    aria-hidden="true"
-                    className={styles.eagleHit}
-                    onClick={openChat}
-                  />
-                  <button
-                    type="button"
-                    className={clsx(
-                      styles.pill,
-                      styles.pillAccent,
-                      styles.eagleButton
-                    )}
-                    aria-label={t['com.affine.shelf.ask-eagle.aria']()}
-                    onClick={openChat}
-                  >
-                    {t['com.affine.shelf.ask-eagle']()}
-                  </button>
-                </>
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-hidden="true"
+                className={styles.eagleHit}
+                onClick={onEagle}
+              />
+              <button
+                type="button"
+                className={clsx(
+                  styles.pill,
+                  styles.pillAccent,
+                  styles.eagleButton
+                )}
+                aria-label={t['com.affine.shelf.ask-eagle.aria']()}
+                aria-expanded={aiAvailable ? undefined : eagleNoteOpen}
+                onClick={onEagle}
+              >
+                {t['com.affine.shelf.ask-eagle']()}
+              </button>
+              {eagleNoteOpen && !aiAvailable ? (
+                <div className={styles.eagleNote} role="status">
+                  {t['com.affine.shelf.eagle.unavailable']()}
+                </div>
               ) : null}
               <h1 className={styles.headline}>
                 {t['com.affine.shelf.title']()}
@@ -315,14 +406,13 @@ export const Component = () => {
                 <button type="button" className={styles.chip} onClick={openAll}>
                   {t['com.affine.shelf.all-docs']()}
                 </button>
-                {aiAvailable ? (
-                  <button
-                    type="button"
-                    className={styles.chip}
-                    onClick={openChat}
-                  >
-                    {t['com.affine.shelf.ask-eagle']()}
-                  </button>
+                <button type="button" className={styles.chip} onClick={onEagle}>
+                  {t['com.affine.shelf.ask-eagle']()}
+                </button>
+                {eagleNoteOpen && !aiAvailable ? (
+                  <span role="status">
+                    {t['com.affine.shelf.eagle.unavailable']()}
+                  </span>
                 ) : null}
               </div>
               {empty ? <p>{t['com.affine.shelf.empty']()}</p> : null}

@@ -26,7 +26,8 @@ const px = (x: number) => `${(x / SCENE_WIDTH) * 100}%`;
 const py = (y: number) => `${(y / SCENE_HEIGHT) * 100}%`;
 
 export const root = style({
-  containerType: 'inline-size',
+  // `size` so the stage below can fit the window height as well as its width
+  containerType: 'size',
   width: '100%',
   height: '100%',
   overflow: 'auto',
@@ -35,9 +36,18 @@ export const root = style({
   fontFamily: 'Karla, var(--affine-font-family, system-ui), sans-serif',
 });
 
+/** the scene fills the window without scrolling: it is centred, and the wall colour covers any spare width or height */
+export const rootScene = style({
+  overflow: 'hidden',
+  display: 'grid',
+  placeItems: 'center',
+});
+
 export const stage = style({
   position: 'relative',
-  width: '100%',
+  // the stage is the container the scene units (cqw) are measured against
+  containerType: 'inline-size',
+  width: `min(100cqw, calc(100cqh * ${SCENE_WIDTH} / ${SCENE_HEIGHT}))`,
   aspectRatio: `${SCENE_WIDTH} / ${SCENE_HEIGHT}`,
   overflow: 'hidden',
 });
@@ -116,12 +126,14 @@ export const pinLabel = style({
   top: py(264),
   width: px(209),
   height: py(26),
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: `max(10px, ${u(12.5)})`,
+  // a block, not a flex box: only a block gets the ellipsis when the folder
+  // name is long, instead of being cut off on both sides
+  display: 'block',
+  textAlign: 'center',
+  lineHeight: u(26),
+  fontSize: `max(9px, ${u(11.5)})`,
   fontWeight: 500,
-  letterSpacing: '0.12em',
+  letterSpacing: '0.08em',
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
@@ -267,7 +279,9 @@ export const headline = style({
   margin: 0,
   fontFamily: "'Playfair Display', Georgia, serif",
   fontWeight: 700,
-  fontSize: `max(26px, ${u(52)})`,
+  // sized to end before the eagle (x 590) even where the serif falls back to Georgia
+  fontSize: `max(22px, ${u(43)})`,
+  whiteSpace: 'nowrap',
   lineHeight: 1.1,
   color: vars.headline,
 });
@@ -310,6 +324,20 @@ export const eagleHit = style({
   cursor: 'pointer',
   borderRadius: '12px',
   selectors: { '&:focus-visible': focusRing },
+});
+export const eagleNote = style({
+  position: 'absolute',
+  left: px(612),
+  top: py(512),
+  width: u(250),
+  padding: '10px 12px',
+  borderRadius: '12px',
+  border: `1.5px solid ${vars.ink}`,
+  background: vars.paper,
+  color: vars.ink,
+  fontSize: `max(12px, ${u(14)})`,
+  lineHeight: 1.45,
+  zIndex: 6,
 });
 export const eagleButton = style({
   position: 'absolute',

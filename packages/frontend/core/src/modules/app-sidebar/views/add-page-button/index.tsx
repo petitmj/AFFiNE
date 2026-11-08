@@ -28,7 +28,7 @@ import * as styles from './index.css';
 /**
  * @return a function to create a new doc, will duplicate the template doc if the page template is enabled
  */
-const useNewDoc = () => {
+export const useNewDoc = () => {
   const workspaceService = useService(WorkspaceService);
   const templateDocService = useService(TemplateDocService);
   const docsService = useService(DocsService);

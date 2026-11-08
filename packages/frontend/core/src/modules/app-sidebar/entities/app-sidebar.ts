@@ -42,6 +42,14 @@ export class AppSidebar extends Entity {
   preventHovering$ = new LiveData<boolean>(false);
 
   /**
+   * a page that fills the whole window (the Shelf) hides the sidebar for as
+   * long as it is shown. This is deliberately not persisted: it must never
+   * overwrite the person's own open/closed choice, which comes back as soon
+   * as they leave that page.
+   */
+  suppressed$ = new LiveData<boolean>(false);
+
+  /**
    * small screen mode, will disable hover effect
    */
   smallScreenMode$ = new LiveData<boolean>(false);
@@ -62,6 +70,10 @@ export class AppSidebar extends Entity {
 
   setSmallScreenMode = (smallScreenMode: boolean) => {
     this.smallScreenMode$.next(smallScreenMode);
+  };
+
+  setSuppressed = (suppressed: boolean) => {
+    this.suppressed$.next(suppressed);
   };
 
   setHovering = (hoverFloating: boolean) => {

@@ -48,6 +48,7 @@ export const RouteContainer = () => {
   const leftSidebarOpen = useLiveData(appSidebarService.open$);
   const workbench = useService(WorkbenchService).workbench;
   const view = useService(ViewService).view;
+  const immersive = useLiveData(view.immersive$);
   const sidebarOpen = useLiveData(workbench.sidebarOpen$);
   const handleToggleSidebar = useCallback(() => {
     workbench.toggleSidebar();
@@ -57,28 +58,30 @@ export const RouteContainer = () => {
 
   return (
     <div className={styles.root}>
-      <div
-        className={styles.header}
-        data-show-switch={showSwitch && !leftSidebarOpen}
-      >
-        {showSwitch && (
-          <SidebarSwitch
-            show={!leftSidebarOpen}
-            className={styles.leftSidebarButton}
+      {immersive ? null : (
+        <div
+          className={styles.header}
+          data-show-switch={showSwitch && !leftSidebarOpen}
+        >
+          {showSwitch && (
+            <SidebarSwitch
+              show={!leftSidebarOpen}
+              className={styles.leftSidebarButton}
+            />
+          )}
+          <ViewHeaderTarget
+            viewId={view.id}
+            className={styles.viewHeaderContainer}
           />
-        )}
-        <ViewHeaderTarget
-          viewId={view.id}
-          className={styles.viewHeaderContainer}
-        />
-        {!BUILD_CONFIG.isElectron && viewPosition.isLast && (
-          <ToggleButton
-            show={!sidebarOpen}
-            className={styles.rightSidebarButton}
-            onToggle={handleToggleSidebar}
-          />
-        )}
-      </div>
+          {!BUILD_CONFIG.isElectron && viewPosition.isLast && (
+            <ToggleButton
+              show={!sidebarOpen}
+              className={styles.rightSidebarButton}
+              onToggle={handleToggleSidebar}
+            />
+          )}
+        </div>
+      )}
 
       <AffineErrorBoundary>
         <Suspense>

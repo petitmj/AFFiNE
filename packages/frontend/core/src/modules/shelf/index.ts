@@ -24,6 +24,7 @@ export type {
   ShelfModel,
 } from './domain/types';
 export { UNFILED_BAY_ID } from './domain/types';
+export { SHELF_NAV, type ShelfNavEntry } from './domain/nav';
 export { ShelfService, type ShelfViewMode } from './services/shelf';
 export {
   assignSlots,

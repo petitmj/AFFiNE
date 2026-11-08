@@ -37,6 +37,16 @@ export class View extends Entity<{
 
   sidebarTabs$ = new LiveData<SidebarTab[]>([]);
 
+  /**
+   * a page that draws the whole window itself (the Shelf) asks the view to
+   * drop its header bar. Transient on purpose: it follows the mounted page.
+   */
+  immersive$ = new LiveData<boolean>(false);
+
+  setImmersive(immersive: boolean) {
+    this.immersive$.next(immersive);
+  }
+
   scrollPositions = new WeakMap<
     Location,
     | number

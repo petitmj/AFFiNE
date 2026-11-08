@@ -12,9 +12,19 @@ samples.
 
 ![The Shelf home](images/shelf/shelf-home.png)
 
-The Shelf is the page a workspace opens on. **Shelf** also stays in the sidebar,
-and **All docs** is one click away there (and from the link on the Shelf page).
-The Shelf is a second way to see your workspace. The picture is decoration; the
+The Shelf is the page a workspace opens on, and while it is showing it fills
+the whole window: the header bar and the sidebar are hidden (this is not saved,
+so your normal layout is back as soon as you open a doc). The scene is scaled to
+fit the window; spare width or height is filled with the wall colour.
+
+**Menu** (top right) is the way into the rest of the app: Search, New doc,
+All docs, Journals, Collections, Tags, Trash, Settings, the palettes, and
+**Show sidebar** if you want the usual sidebar back while you stay on the Shelf.
+The eagle opens AI chat. If the server has AI switched off, the eagle says so
+instead of doing nothing; an admin turns it on in the admin panel (AI / Copilot
+settings).
+
+The picture is decoration; the
 things you can use are real buttons, so keyboard and screen-reader use works.
 
 | In the picture                      | What it is                                                                     |

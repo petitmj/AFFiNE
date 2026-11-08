@@ -51,4 +51,19 @@ describe('AppSidebar', () => {
     sidebar.setOpen(false);
     expect(sidebar.getCachedAppSidebarOpenState()).toBe(false);
   });
+
+  test('suppressing hides the sidebar without touching the saved choice', () => {
+    sidebar.setOpen(true);
+    expect(sidebar.suppressed$.value).toBe(false);
+
+    sidebar.setSuppressed(true);
+    expect(sidebar.suppressed$.value).toBe(true);
+    // the person's own choice is untouched, in memory and in storage
+    expect(sidebar.open$.value).toBe(true);
+    expect(memento.get('open')).toBe(true);
+
+    sidebar.setSuppressed(false);
+    expect(sidebar.suppressed$.value).toBe(false);
+    expect(sidebar.open$.value).toBe(true);
+  });
 });

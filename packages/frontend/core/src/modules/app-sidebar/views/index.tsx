@@ -52,16 +52,19 @@ export function AppSidebar({ children }: PropsWithChildren) {
   const smallScreenMode = useLiveData(appSidebarService.smallScreenMode$);
   const hovering = useLiveData(appSidebarService.hovering$) && open !== true;
   const resizing = useLiveData(appSidebarService.resizing$);
+  const suppressed = useLiveData(appSidebarService.suppressed$);
 
-  const sidebarState = smallScreenMode
-    ? open
-      ? 'floating-with-mask'
-      : 'close'
-    : open
-      ? 'open'
-      : hovering
-        ? 'floating'
-        : 'close';
+  const sidebarState = suppressed
+    ? 'close'
+    : smallScreenMode
+      ? open
+        ? 'floating-with-mask'
+        : 'close'
+      : open
+        ? 'open'
+        : hovering
+          ? 'floating'
+          : 'close';
 
   const hasRightBorder = !BUILD_CONFIG.isElectron && !clientBorder;
 

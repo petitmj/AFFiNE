@@ -71,7 +71,9 @@ if __name__ == '__main__':
         if n == 'board':
             spec = dict(SPECS['board'])
             spec.pop('palette'); spec['min_area'] = 1.6; spec['eps'] = 1.0; spec['sigma'] = 0.5
-            spec['fills'] = [(222, 267, 425, 286, CREAM)] + [(x, y, x + w, y + h, H('#413739')) for x, y, w, h in
+            # the wall highlight around the label is wall, not cream: only the label itself is cream
+            wallfill = H('#e7cca6')
+            spec['fills'] = [(168, 248, 425, 264, wallfill), (425, 248, 477, 292, wallfill), (222, 267, 425, 286, CREAM)] + [(x, y, x + w, y + h, H('#413739')) for x, y, w, h in
                 [(192, 311, 74, 58), (285, 314, 74, 58), (378, 311, 74, 58), (194, 388, 72, 57), (285, 391, 74, 57), (378, 388, 74, 57)]]
             spec.pop('role_min', None)
             p = T.kmeans_palette(spec, 9)
@@ -88,7 +90,10 @@ if __name__ == '__main__':
             spec['palette'] = T.kmeans_palette(spec, 9)
             out.append(T.trace(spec))
         elif n == 'eagle':
-            spec = dict(id='eagle', box=(590, 436, 725, 660), base=False, min_area=1.0, eps=0.8)
+            # the picture has an "Ask the eagle" button beside the bird; the app draws a real
+            # one, so its left edge must not be traced into the art as a stray half disc
+            spec = dict(id='eagle', box=(590, 436, 725, 660), base=False, min_area=1.0, eps=0.8,
+                        fills=[(688, 444, 726, 512, H('#e7cca6'))])
             p = T.kmeans_palette(spec, 14)
             # wall cluster -> transparent
             wall = T.lab([H('#e7cca6')])[0]

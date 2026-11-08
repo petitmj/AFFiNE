@@ -22,6 +22,7 @@ import {
   flowerLook,
 } from '../domain/flowers';
 import { bookLook, fnv1a } from '../domain/hash';
+import { SHELF_NAV } from '../domain/nav';
 import { layoutShelf } from '../domain/layout';
 import {
   countOpened,
@@ -373,4 +374,13 @@ test('flowers: colour follows the kind of notification, and a look is stable', t
     Array.from({ length: 20 }, (_, i) => flowerLook(`id-${i}`, 'x').turn)
   );
   t.true(turns.size > 5);
+});
+
+test('shelf navigation entries are unique and start with All docs', t => {
+  const ids = SHELF_NAV.map(e => e.id);
+  const paths = SHELF_NAV.map(e => e.path);
+  t.is(new Set(ids).size, ids.length);
+  t.is(new Set(paths).size, paths.length);
+  t.is(paths[0], '/all');
+  for (const p of paths) t.true(p.startsWith('/') && p.length > 1);
 });

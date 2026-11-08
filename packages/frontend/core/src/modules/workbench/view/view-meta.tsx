@@ -45,3 +45,19 @@ export const ViewIcon = ({ icon }: { icon: ViewIconName }) => {
 
   return null;
 };
+
+/**
+ * While mounted, the view shows only its body: no header bar and no sidebar
+ * toggles. The page is then responsible for its own way back to the rest of
+ * the app.
+ */
+export const ViewImmersive = () => {
+  const view = useServiceOptional(ViewService)?.view;
+
+  useEffect(() => {
+    view?.setImmersive(true);
+    return () => view?.setImmersive(false);
+  }, [view]);
+
+  return null;
+};

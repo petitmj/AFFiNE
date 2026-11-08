@@ -8256,6 +8256,18 @@ export function useAFFiNEI18N(): {
       */
     ["com.affine.shelf.all-docs"](): string;
     /**
+      * `Show sidebar`
+      */
+    ["com.affine.shelf.menu.show-sidebar"](): string;
+    /**
+      * `Hide sidebar`
+      */
+    ["com.affine.shelf.menu.hide-sidebar"](): string;
+    /**
+      * `AI chat is not switched on for this server yet. An admin can turn it on in the admin panel (AI / Copilot settings), then reload this page.`
+      */
+    ["com.affine.shelf.eagle.unavailable"](): string;
+    /**
       * `Colors`
       */
     ["com.affine.shelf.palette"](): string;
